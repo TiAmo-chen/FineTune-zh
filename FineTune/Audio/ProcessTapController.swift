@@ -821,92 +821,70 @@ final class ProcessTapController {
 
         // Copy input to output with ramped gain and soft limiting
         //
-        // Buffer formats vary by device:
-        // - Interleaved (built-in, AirPods): 1 buffer with 2 channels (L+R interleaved)
-        // - Non-interleaved (USB, Pro audio): N separate mono buffers
+        // Buffer routing handles all device configurations:
+        // - Built-in/AirPods: inputCount == outputCount, direct 1:1 mapping
+        // - USB with mic (MOTU M2, etc.): inputCount > outputCount, tap at END
+        // - Multi-channel output: inputCount < outputCount, silence extras
         //
-        // For non-interleaved, tap buffers are ALWAYS at the END:
-        // - Simple USB: [mic_L, mic_R, tap_L, tap_R] → tap at indices 2,3
-        // - MOTU 8A:    [in_0...in_7, tap_L, tap_R] → tap at indices 8,9
+        // Key insight: Process tap (stereoMixdownOfProcesses) always produces
+        // stereo at the END of the input buffer list.
 
         let inputBufferCount = inputBuffers.count
         let outputBufferCount = outputBuffers.count
 
-        // Detect interleaved format (single buffer with multiple channels)
-        let isInterleaved = (inputBuffers.first?.mNumberChannels ?? 0) > 1
+        for outputIndex in 0..<outputBufferCount {
+            let outputBuffer = outputBuffers[outputIndex]
+            guard let outputData = outputBuffer.mData else { continue }
 
-        if isInterleaved || inputBufferCount == outputBufferCount {
-            // CASE 1: Interleaved OR matching buffer counts
-            // Direct 1-to-1 mapping works (handles built-in speakers, AirPods, simple DACs)
-            for (inputBuffer, outputBuffer) in zip(inputBuffers, outputBuffers) {
-                guard let inputData = inputBuffer.mData,
-                      let outputData = outputBuffer.mData else { continue }
-
-                let inputSamples = inputData.assumingMemoryBound(to: Float.self)
-                let outputSamples = outputData.assumingMemoryBound(to: Float.self)
-                let sampleCount = Int(inputBuffer.mDataByteSize) / MemoryLayout<Float>.size
-
-                for i in 0..<sampleCount {
-                    currentVol += (targetVol - currentVol) * rampCoefficient
-                    let effectiveCompensation: Float = _isCrossfading ? 1.0 : _deviceVolumeCompensation
-                    var sample = inputSamples[i] * currentVol * crossfadeMultiplier * effectiveCompensation
-                    if targetVol > 1.0 {
-                        sample = softLimit(sample)
-                    }
-                    outputSamples[i] = sample
-                }
-
-                if let eqProcessor = eqProcessor, !_isCrossfading {
-                    let frameCount = sampleCount / 2
-                    eqProcessor.process(input: outputSamples, output: outputSamples, frameCount: frameCount)
-                }
+            // Calculate which input buffer to use:
+            // - If inputCount > outputCount: tap is at END, offset by difference
+            // - If inputCount <= outputCount: direct mapping, silence extras
+            let inputIndex: Int
+            if inputBufferCount > outputBufferCount {
+                // USB with mic inputs: tap buffers are at the END
+                // e.g., [mic_L, mic_R, tap_L, tap_R] for MOTU M2 (4 in, 2 out)
+                inputIndex = inputBufferCount - outputBufferCount + outputIndex
+            } else {
+                // Built-in speakers or multi-channel output: direct mapping
+                inputIndex = outputIndex
             }
-        } else {
-            // CASE 2: Non-interleaved with extra input buffers (USB with mic, Pro audio)
-            // Tap is ALWAYS at the END - last 2 buffers for stereo tap
-            // Output stereo to channels 0-1, silence channels 2+
-            let tapStartIndex = inputBufferCount - 2  // stereoMixdownOfProcesses = 2 channels
 
-            for outputIndex in 0..<outputBufferCount {
-                let outputBuffer = outputBuffers[outputIndex]
-                guard let outputData = outputBuffer.mData else { continue }
+            // Check if we have a corresponding input buffer
+            guard inputIndex < inputBufferCount else {
+                // No input for this output - silence it (multi-channel output case)
+                memset(outputData, 0, Int(outputBuffer.mDataByteSize))
+                continue
+            }
 
-                if outputIndex < 2 {
-                    // Channels 0-1: Process stereo tap audio
-                    let inputIndex = tapStartIndex + outputIndex
-                    guard inputIndex >= 0 && inputIndex < inputBufferCount else {
-                        memset(outputData, 0, Int(outputBuffer.mDataByteSize))
-                        continue
-                    }
+            let inputBuffer = inputBuffers[inputIndex]
+            guard let inputData = inputBuffer.mData else {
+                memset(outputData, 0, Int(outputBuffer.mDataByteSize))
+                continue
+            }
 
-                    let inputBuffer = inputBuffers[inputIndex]
-                    guard let inputData = inputBuffer.mData else {
-                        memset(outputData, 0, Int(outputBuffer.mDataByteSize))
-                        continue
-                    }
+            let inputSamples = inputData.assumingMemoryBound(to: Float.self)
+            let outputSamples = outputData.assumingMemoryBound(to: Float.self)
+            let sampleCount = Int(inputBuffer.mDataByteSize) / MemoryLayout<Float>.size
 
-                    let inputSamples = inputData.assumingMemoryBound(to: Float.self)
-                    let outputSamples = outputData.assumingMemoryBound(to: Float.self)
-                    let sampleCount = Int(inputBuffer.mDataByteSize) / MemoryLayout<Float>.size
-
-                    for i in 0..<sampleCount {
-                        currentVol += (targetVol - currentVol) * rampCoefficient
-                        let effectiveCompensation: Float = _isCrossfading ? 1.0 : _deviceVolumeCompensation
-                        var sample = inputSamples[i] * currentVol * crossfadeMultiplier * effectiveCompensation
-                        if targetVol > 1.0 {
-                            sample = softLimit(sample)
-                        }
-                        outputSamples[i] = sample
-                    }
-
-                    if let eqProcessor = eqProcessor, !_isCrossfading {
-                        let frameCount = sampleCount
-                        eqProcessor.process(input: outputSamples, output: outputSamples, frameCount: frameCount)
-                    }
-                } else {
-                    // Channels 2+: Silence (stereo tap only has 2 channels)
-                    memset(outputData, 0, Int(outputBuffer.mDataByteSize))
+            // Apply volume ramping and soft limiting
+            for i in 0..<sampleCount {
+                currentVol += (targetVol - currentVol) * rampCoefficient
+                let effectiveCompensation: Float = _isCrossfading ? 1.0 : _deviceVolumeCompensation
+                var sample = inputSamples[i] * currentVol * crossfadeMultiplier * effectiveCompensation
+                if targetVol > 1.0 {
+                    sample = softLimit(sample)
                 }
+                outputSamples[i] = sample
+            }
+
+            // Apply EQ (skip during crossfade to prevent glitches)
+            if let eqProcessor = eqProcessor, !_isCrossfading {
+                // Frame count depends on buffer format:
+                // - Interleaved (mNumberChannels > 1): samples / channels
+                // - Non-interleaved (mNumberChannels == 1): samples = frames
+                let channels = Int(inputBuffer.mNumberChannels)
+                let frameCount = channels > 1 ? sampleCount / channels : sampleCount
+                eqProcessor.process(input: outputSamples, output: outputSamples, frameCount: frameCount)
             }
         }
 
@@ -978,85 +956,54 @@ final class ProcessTapController {
 
         // Copy input to output with ramped gain and crossfade
         //
-        // Buffer formats vary by device (same as primary tap):
-        // - Interleaved (built-in, AirPods): 1 buffer with 2 channels
-        // - Non-interleaved (USB, Pro audio): N separate mono buffers, tap at END
+        // Buffer routing handles all device configurations (same as primary):
+        // - Built-in/AirPods: inputCount == outputCount, direct 1:1 mapping
+        // - USB with mic (MOTU M2, etc.): inputCount > outputCount, tap at END
+        // - Multi-channel output: inputCount < outputCount, silence extras
 
         let inputBufferCount = inputBuffers.count
         let outputBufferCount = outputBuffers.count
 
-        // Detect interleaved format (single buffer with multiple channels)
-        let isInterleaved = (inputBuffers.first?.mNumberChannels ?? 0) > 1
+        for outputIndex in 0..<outputBufferCount {
+            let outputBuffer = outputBuffers[outputIndex]
+            guard let outputData = outputBuffer.mData else { continue }
 
-        if isInterleaved || inputBufferCount == outputBufferCount {
-            // CASE 1: Interleaved OR matching buffer counts
-            for (inputBuffer, outputBuffer) in zip(inputBuffers, outputBuffers) {
-                guard let inputData = inputBuffer.mData,
-                      let outputData = outputBuffer.mData else { continue }
-
-                let inputSamples = inputData.assumingMemoryBound(to: Float.self)
-                let outputSamples = outputData.assumingMemoryBound(to: Float.self)
-                let sampleCount = Int(inputBuffer.mDataByteSize) / MemoryLayout<Float>.size
-
-                for i in 0..<sampleCount {
-                    currentVol += (targetVol - currentVol) * secondaryRampCoefficient
-                    var sample = inputSamples[i] * currentVol * crossfadeMultiplier * _deviceVolumeCompensation
-                    if targetVol > 1.0 {
-                        sample = softLimit(sample)
-                    }
-                    outputSamples[i] = sample
-                }
-
-                if let eqProcessor = eqProcessor, !_isCrossfading {
-                    let frameCount = sampleCount / 2
-                    eqProcessor.process(input: outputSamples, output: outputSamples, frameCount: frameCount)
-                }
+            // Calculate which input buffer to use (same logic as primary)
+            let inputIndex: Int
+            if inputBufferCount > outputBufferCount {
+                inputIndex = inputBufferCount - outputBufferCount + outputIndex
+            } else {
+                inputIndex = outputIndex
             }
-        } else {
-            // CASE 2: Non-interleaved with extra input buffers (USB with mic, Pro audio)
-            // Tap is ALWAYS at the END - last 2 buffers for stereo tap
-            // Output stereo to channels 0-1, silence channels 2+
-            let tapStartIndex = inputBufferCount - 2
 
-            for outputIndex in 0..<outputBufferCount {
-                let outputBuffer = outputBuffers[outputIndex]
-                guard let outputData = outputBuffer.mData else { continue }
+            guard inputIndex < inputBufferCount else {
+                memset(outputData, 0, Int(outputBuffer.mDataByteSize))
+                continue
+            }
 
-                if outputIndex < 2 {
-                    // Channels 0-1: Process stereo tap audio
-                    let inputIndex = tapStartIndex + outputIndex
-                    guard inputIndex >= 0 && inputIndex < inputBufferCount else {
-                        memset(outputData, 0, Int(outputBuffer.mDataByteSize))
-                        continue
-                    }
+            let inputBuffer = inputBuffers[inputIndex]
+            guard let inputData = inputBuffer.mData else {
+                memset(outputData, 0, Int(outputBuffer.mDataByteSize))
+                continue
+            }
 
-                    let inputBuffer = inputBuffers[inputIndex]
-                    guard let inputData = inputBuffer.mData else {
-                        memset(outputData, 0, Int(outputBuffer.mDataByteSize))
-                        continue
-                    }
+            let inputSamples = inputData.assumingMemoryBound(to: Float.self)
+            let outputSamples = outputData.assumingMemoryBound(to: Float.self)
+            let sampleCount = Int(inputBuffer.mDataByteSize) / MemoryLayout<Float>.size
 
-                    let inputSamples = inputData.assumingMemoryBound(to: Float.self)
-                    let outputSamples = outputData.assumingMemoryBound(to: Float.self)
-                    let sampleCount = Int(inputBuffer.mDataByteSize) / MemoryLayout<Float>.size
-
-                    for i in 0..<sampleCount {
-                        currentVol += (targetVol - currentVol) * secondaryRampCoefficient
-                        var sample = inputSamples[i] * currentVol * crossfadeMultiplier * _deviceVolumeCompensation
-                        if targetVol > 1.0 {
-                            sample = softLimit(sample)
-                        }
-                        outputSamples[i] = sample
-                    }
-
-                    if let eqProcessor = eqProcessor, !_isCrossfading {
-                        let frameCount = sampleCount
-                        eqProcessor.process(input: outputSamples, output: outputSamples, frameCount: frameCount)
-                    }
-                } else {
-                    // Channels 2+: Silence (stereo tap only has 2 channels)
-                    memset(outputData, 0, Int(outputBuffer.mDataByteSize))
+            for i in 0..<sampleCount {
+                currentVol += (targetVol - currentVol) * secondaryRampCoefficient
+                var sample = inputSamples[i] * currentVol * crossfadeMultiplier * _deviceVolumeCompensation
+                if targetVol > 1.0 {
+                    sample = softLimit(sample)
                 }
+                outputSamples[i] = sample
+            }
+
+            if let eqProcessor = eqProcessor, !_isCrossfading {
+                let channels = Int(inputBuffer.mNumberChannels)
+                let frameCount = channels > 1 ? sampleCount / channels : sampleCount
+                eqProcessor.process(input: outputSamples, output: outputSamples, frameCount: frameCount)
             }
         }
 
