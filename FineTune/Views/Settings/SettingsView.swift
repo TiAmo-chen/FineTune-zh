@@ -22,6 +22,8 @@ struct SettingsView: View {
                 audioSection
                 notificationsSection
                 dataSection
+
+                aboutFooter
             }
         }
         .scrollIndicators(.never)
@@ -175,6 +177,17 @@ struct SettingsView: View {
                 .transition(.opacity.combined(with: .scale(scale: 0.95)))
             }
         }
+    }
+
+    // MARK: - About Footer
+
+    private var aboutFooter: some View {
+        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
+        return Text("v\(version) • Developed by Ronit Singh")
+            .font(.system(size: 9, weight: .regular))
+            .foregroundStyle(DesignTokens.Colors.textQuaternary)
+            .frame(maxWidth: .infinity)
+            .padding(.top, DesignTokens.Spacing.md)
     }
 }
 
