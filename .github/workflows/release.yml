@@ -148,8 +148,8 @@ jobs:
           # Get DMG size
           DMG_SIZE=$(stat -f%z "$DMG_PATH")
 
-          # Sign DMG with EdDSA key
-          ED_SIGNATURE=$(echo -n "$SPARKLE_PRIVATE_KEY" | sparkle_tools/bin/sign_update "$DMG_PATH")
+          # Sign DMG with EdDSA key (use -f - to read key from stdin)
+          ED_SIGNATURE=$(echo -n "$SPARKLE_PRIVATE_KEY" | sparkle_tools/bin/sign_update -f - "$DMG_PATH")
 
           # Get current date in RFC 2822 format
           PUB_DATE=$(date -R)
