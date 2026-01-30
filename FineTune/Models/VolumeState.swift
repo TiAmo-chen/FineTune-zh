@@ -1,11 +1,19 @@
 // FineTune/Models/VolumeState.swift
 import Foundation
 
+/// Device selection mode for an app's audio output
+enum DeviceSelectionMode: String, Codable, Equatable {
+    case single  // Route to one device (default)
+    case multi   // Route to multiple devices simultaneously
+}
+
 /// Consolidated state for a single app's audio settings
 struct AppAudioState {
     var volume: Float
     var muted: Bool
     var persistenceIdentifier: String
+    var deviceSelectionMode: DeviceSelectionMode = .single
+    var selectedDeviceUIDs: Set<String> = []  // Used in multi mode
 }
 
 @Observable
@@ -75,6 +83,70 @@ final class VolumeState {
         ensureState(for: pid, identifier: identifier)
         if let saved = settingsManager?.getMute(for: identifier) {
             states[pid]?.muted = saved
+            return saved
+        }
+        return nil
+    }
+
+    // MARK: - Device Selection Mode
+
+    func getDeviceSelectionMode(for pid: pid_t) -> DeviceSelectionMode {
+        states[pid]?.deviceSelectionMode ?? .single
+    }
+
+    func setDeviceSelectionMode(for pid: pid_t, to mode: DeviceSelectionMode, identifier: String? = nil) {
+        if var state = states[pid] {
+            state.deviceSelectionMode = mode
+            if let identifier = identifier {
+                state.persistenceIdentifier = identifier
+            }
+            states[pid] = state
+            settingsManager?.setDeviceSelectionMode(for: state.persistenceIdentifier, to: mode)
+        } else if let identifier = identifier {
+            let defaultVolume = settingsManager?.appSettings.defaultNewAppVolume ?? 1.0
+            var newState = AppAudioState(volume: defaultVolume, muted: false, persistenceIdentifier: identifier)
+            newState.deviceSelectionMode = mode
+            states[pid] = newState
+            settingsManager?.setDeviceSelectionMode(for: identifier, to: mode)
+        }
+    }
+
+    func loadSavedDeviceSelectionMode(for pid: pid_t, identifier: String) -> DeviceSelectionMode? {
+        ensureState(for: pid, identifier: identifier)
+        if let saved = settingsManager?.getDeviceSelectionMode(for: identifier) {
+            states[pid]?.deviceSelectionMode = saved
+            return saved
+        }
+        return nil
+    }
+
+    // MARK: - Selected Device UIDs (Multi Mode)
+
+    func getSelectedDeviceUIDs(for pid: pid_t) -> Set<String> {
+        states[pid]?.selectedDeviceUIDs ?? []
+    }
+
+    func setSelectedDeviceUIDs(for pid: pid_t, to uids: Set<String>, identifier: String? = nil) {
+        if var state = states[pid] {
+            state.selectedDeviceUIDs = uids
+            if let identifier = identifier {
+                state.persistenceIdentifier = identifier
+            }
+            states[pid] = state
+            settingsManager?.setSelectedDeviceUIDs(for: state.persistenceIdentifier, to: uids)
+        } else if let identifier = identifier {
+            let defaultVolume = settingsManager?.appSettings.defaultNewAppVolume ?? 1.0
+            var newState = AppAudioState(volume: defaultVolume, muted: false, persistenceIdentifier: identifier)
+            newState.selectedDeviceUIDs = uids
+            states[pid] = newState
+            settingsManager?.setSelectedDeviceUIDs(for: identifier, to: uids)
+        }
+    }
+
+    func loadSavedSelectedDeviceUIDs(for pid: pid_t, identifier: String) -> Set<String>? {
+        ensureState(for: pid, identifier: identifier)
+        if let saved = settingsManager?.getSelectedDeviceUIDs(for: identifier) {
+            states[pid]?.selectedDeviceUIDs = saved
             return saved
         }
         return nil

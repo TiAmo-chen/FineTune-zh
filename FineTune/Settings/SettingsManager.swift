@@ -55,13 +55,15 @@ final class SettingsManager {
     private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "FineTune", category: "SettingsManager")
 
     struct Settings: Codable {
-        var version: Int = 5
+        var version: Int = 6
         var appVolumes: [String: Float] = [:]
         var appDeviceRouting: [String: String] = [:]  // bundleID → deviceUID
         var appMutes: [String: Bool] = [:]  // bundleID → isMuted
         var appEQSettings: [String: EQSettings] = [:]  // bundleID → EQ settings
         var appSettings: AppSettings = AppSettings()  // App-wide settings
         var systemSoundsFollowsDefault: Bool = true  // Whether system sounds follows macOS default
+        var appDeviceSelectionMode: [String: DeviceSelectionMode] = [:]  // bundleID → selection mode
+        var appSelectedDeviceUIDs: [String: [String]] = [:]  // bundleID → array of device UIDs for multi mode
     }
 
     init(directory: URL? = nil) {
@@ -128,6 +130,29 @@ final class SettingsManager {
 
     func setEQSettings(_ eqSettings: EQSettings, for appIdentifier: String) {
         settings.appEQSettings[appIdentifier] = eqSettings
+        scheduleSave()
+    }
+
+    // MARK: - Device Selection Mode
+
+    func getDeviceSelectionMode(for identifier: String) -> DeviceSelectionMode? {
+        settings.appDeviceSelectionMode[identifier]
+    }
+
+    func setDeviceSelectionMode(for identifier: String, to mode: DeviceSelectionMode) {
+        settings.appDeviceSelectionMode[identifier] = mode
+        scheduleSave()
+    }
+
+    // MARK: - Selected Device UIDs (Multi Mode)
+
+    func getSelectedDeviceUIDs(for identifier: String) -> Set<String>? {
+        guard let uids = settings.appSelectedDeviceUIDs[identifier] else { return nil }
+        return Set(uids)
+    }
+
+    func setSelectedDeviceUIDs(for identifier: String, to uids: Set<String>) {
+        settings.appSelectedDeviceUIDs[identifier] = Array(uids)
         scheduleSave()
     }
 
