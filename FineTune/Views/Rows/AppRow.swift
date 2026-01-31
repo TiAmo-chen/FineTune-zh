@@ -205,7 +205,8 @@ struct AppRow: View {
                         onModeChange: onDeviceModeChange,
                         onDeviceSelected: onDeviceSelected,
                         onDevicesSelected: onDevicesSelected,
-                        onSelectFollowDefault: onSelectFollowDefault
+                        onSelectFollowDefault: onSelectFollowDefault,
+                        showModeToggle: true
                     )
 
                     // EQ button at end of row (animates to X when expanded)

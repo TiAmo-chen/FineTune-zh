@@ -19,6 +19,7 @@ struct DevicePicker: View {
     let onDeviceSelected: (String) -> Void  // Single mode callback
     let onDevicesSelected: (Set<String>) -> Void  // Multi mode callback
     let onSelectFollowDefault: () -> Void
+    let showModeToggle: Bool
 
     @State private var isExpanded = false
     @State private var isButtonHovered = false
@@ -196,21 +197,23 @@ struct DevicePicker: View {
 
     private var dropdownContent: some View {
         VStack(spacing: 0) {
-            // Mode toggle header
-            ModeToggle(mode: Binding(
-                get: { currentMode },
-                set: { newMode in
-                    currentMode = newMode  // Update local state immediately
-                    onModeChange(newMode)  // Notify parent
-                    // States are independent - no copying between modes
-                }
-            ))
-            .padding(.horizontal, DesignTokens.Spacing.xs + 2)
-            .padding(.top, DesignTokens.Spacing.xs + 2)
-            .padding(.bottom, DesignTokens.Spacing.xs)
+            // Mode toggle header (hidden for single-mode-only contexts like Settings)
+            if showModeToggle {
+                ModeToggle(mode: Binding(
+                    get: { currentMode },
+                    set: { newMode in
+                        currentMode = newMode  // Update local state immediately
+                        onModeChange(newMode)  // Notify parent
+                        // States are independent - no copying between modes
+                    }
+                ))
+                .padding(.horizontal, DesignTokens.Spacing.xs + 2)
+                .padding(.top, DesignTokens.Spacing.xs + 2)
+                .padding(.bottom, DesignTokens.Spacing.xs)
 
-            Divider()
-                .padding(.horizontal, 6)
+                Divider()
+                    .padding(.horizontal, 6)
+            }
 
             // Device list
             ScrollView(.vertical, showsIndicators: false) {
@@ -444,6 +447,7 @@ extension DevicePicker {
         self.onDeviceSelected = onDeviceSelected
         self.onDevicesSelected = { _ in }
         self.onSelectFollowDefault = onSelectFollowDefault
+        self.showModeToggle = false
     }
 }
 
@@ -482,7 +486,8 @@ extension DevicePicker {
                         onModeChange: { mode = $0 },
                         onDeviceSelected: { _ in },
                         onDevicesSelected: { selectedUIDs = $0 },
-                        onSelectFollowDefault: {}
+                        onSelectFollowDefault: {},
+                        showModeToggle: true
                     )
 
                     Text("Selected: \(selectedUIDs.count) devices")
@@ -527,7 +532,8 @@ extension DevicePicker {
                         },
                         onSelectFollowDefault: {
                             isFollowingDefault = true
-                        }
+                        },
+                        showModeToggle: true
                     )
 
                     VStack(alignment: .leading, spacing: 4) {
