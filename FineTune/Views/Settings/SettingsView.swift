@@ -189,12 +189,23 @@ struct SettingsView: View {
     // MARK: - About Footer
 
     private var aboutFooter: some View {
-        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
-        return Text("v\(version) • Developed by Ronit Singh")
-            .font(.system(size: 9, weight: .regular))
-            .foregroundStyle(DesignTokens.Colors.textQuaternary)
-            .frame(maxWidth: .infinity)
-            .padding(.top, DesignTokens.Spacing.md)
+        let startYear = 2026
+        let currentYear = Calendar.current.component(.year, from: Date())
+        let yearText = startYear == currentYear ? "\(startYear)" : "\(startYear)-\(currentYear)"
+
+        return HStack(spacing: DesignTokens.Spacing.xs) {
+            Link(destination: URL(string: "https://github.com/ronitsingh10/FineTune")!) {
+                Text("\(Image(systemName: "star")) Star on GitHub")
+            }
+
+            Text("·")
+
+            Text("Copyright © \(yearText) Ronit Singh")
+        }
+        .font(DesignTokens.Typography.caption)
+        .foregroundStyle(DesignTokens.Colors.textTertiary)
+        .frame(maxWidth: .infinity)
+        .padding(.top, DesignTokens.Spacing.sm)
     }
 }
 
