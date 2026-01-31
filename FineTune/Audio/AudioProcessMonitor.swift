@@ -24,6 +24,13 @@ final class AudioProcessMonitor {
         "com.apple.hearingd",
         "com.apple.voicebankingd",
         "com.apple.systemsound",
+        "com.apple.FrontBoardServices",
+        "com.apple.frontboard",
+        "com.apple.springboard",
+        "com.apple.notificationcenter",
+        "com.apple.NotificationCenter",
+        "com.apple.UserNotifications",
+        "com.apple.usernotifications",
     ]
 
     /// Process names for system daemons (fallback when bundle ID is nil or different format)

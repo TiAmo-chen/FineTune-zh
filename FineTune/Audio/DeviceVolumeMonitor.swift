@@ -635,13 +635,13 @@ final class DeviceVolumeMonitor {
             if transportType == .bluetooth || transportType == .bluetoothLE {
                 let deviceID = device.id
                 Task { @MainActor [weak self] in
-                    try? await Task.sleep(for: .milliseconds(200))
+                    try? await Task.sleep(for: .milliseconds(300))
                     guard let self, self.volumes.keys.contains(deviceID) else { return }
                     let confirmedVolume = deviceID.readOutputVolumeScalar()
-                    self.volumes[deviceID] = confirmedVolume
                     let confirmedMute = deviceID.readMuteState()
+                    self.volumes[deviceID] = confirmedVolume
                     self.muteStates[deviceID] = confirmedMute
-                    self.logger.debug("Bluetooth device \(deviceID) re-read volume: \(confirmedVolume), muted: \(confirmedMute)")
+                    self.logger.debug("Bluetooth device \(deviceID) confirmed volume: \(confirmedVolume), muted: \(confirmedMute)")
                 }
             }
         }
@@ -829,13 +829,13 @@ final class DeviceVolumeMonitor {
             if transportType == .bluetooth || transportType == .bluetoothLE {
                 let deviceID = device.id
                 Task { @MainActor [weak self] in
-                    try? await Task.sleep(for: .milliseconds(200))
+                    try? await Task.sleep(for: .milliseconds(300))
                     guard let self, self.inputVolumes.keys.contains(deviceID) else { return }
                     let confirmedVolume = deviceID.readInputVolumeScalar()
-                    self.inputVolumes[deviceID] = confirmedVolume
                     let confirmedMute = deviceID.readInputMuteState()
+                    self.inputVolumes[deviceID] = confirmedVolume
                     self.inputMuteStates[deviceID] = confirmedMute
-                    self.logger.debug("Bluetooth input device \(deviceID) re-read volume: \(confirmedVolume), muted: \(confirmedMute)")
+                    self.logger.debug("Bluetooth input device \(deviceID) confirmed volume: \(confirmedVolume), muted: \(confirmedMute)")
                 }
             }
         }
