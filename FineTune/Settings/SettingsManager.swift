@@ -78,6 +78,11 @@ final class SettingsManager {
         var lockedInputDeviceUID: String? = nil  // User's preferred input device (for input lock feature)
         var pinnedApps: Set<String> = []  // Persistence identifiers of pinned apps
         var pinnedAppInfo: [String: PinnedAppInfo] = [:]  // Persistence identifier → app metadata
+
+        // DDC monitor speaker volumes (keyed by CoreAudio device UID for stability across reboots)
+        var ddcVolumes: [String: Int] = [:]       // device UID → volume (0-100)
+        var ddcMuteStates: [String: Bool] = [:]   // device UID → software mute state
+        var ddcSavedVolumes: [String: Int] = [:]  // device UID → volume before mute
     }
 
     init(directory: URL? = nil) {
@@ -204,6 +209,35 @@ final class SettingsManager {
         settings.pinnedApps.compactMap { settings.pinnedAppInfo[$0] }
     }
 
+    // MARK: - DDC Monitor Volume
+
+    func getDDCVolume(for deviceUID: String) -> Int? {
+        settings.ddcVolumes[deviceUID]
+    }
+
+    func setDDCVolume(for deviceUID: String, to volume: Int) {
+        settings.ddcVolumes[deviceUID] = volume
+        scheduleSave()
+    }
+
+    func getDDCMuteState(for deviceUID: String) -> Bool {
+        settings.ddcMuteStates[deviceUID] ?? false
+    }
+
+    func setDDCMuteState(for deviceUID: String, to muted: Bool) {
+        settings.ddcMuteStates[deviceUID] = muted
+        scheduleSave()
+    }
+
+    func getDDCSavedVolume(for deviceUID: String) -> Int? {
+        settings.ddcSavedVolumes[deviceUID]
+    }
+
+    func setDDCSavedVolume(for deviceUID: String, to volume: Int) {
+        settings.ddcSavedVolumes[deviceUID] = volume
+        scheduleSave()
+    }
+
     // MARK: - App-Wide Settings
 
     var appSettings: AppSettings {
@@ -251,6 +285,9 @@ final class SettingsManager {
         settings.appSettings = AppSettings()
         settings.systemSoundsFollowsDefault = true
         settings.lockedInputDeviceUID = nil
+        settings.ddcVolumes.removeAll()
+        settings.ddcMuteStates.removeAll()
+        settings.ddcSavedVolumes.removeAll()
 
         // Also unregister from launch at login
         try? SMAppService.mainApp.unregister()

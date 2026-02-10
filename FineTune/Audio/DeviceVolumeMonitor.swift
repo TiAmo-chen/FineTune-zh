@@ -65,6 +65,10 @@ final class DeviceVolumeMonitor {
     private let settingsManager: SettingsManager
     private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "FineTune", category: "DeviceVolumeMonitor")
 
+    #if !APP_STORE
+    private let ddcController: DDCController?
+    #endif
+
     /// Volume listeners for each tracked output device
     private var volumeListeners: [AudioDeviceID: AudioObjectPropertyListenerBlock] = [:]
     /// Mute listeners for each tracked output device
@@ -124,10 +128,18 @@ final class DeviceVolumeMonitor {
         mElement: kAudioObjectPropertyElementMain
     )
 
+    #if !APP_STORE
+    init(deviceMonitor: AudioDeviceMonitor, settingsManager: SettingsManager, ddcController: DDCController? = nil) {
+        self.deviceMonitor = deviceMonitor
+        self.settingsManager = settingsManager
+        self.ddcController = ddcController
+    }
+    #else
     init(deviceMonitor: AudioDeviceMonitor, settingsManager: SettingsManager) {
         self.deviceMonitor = deviceMonitor
         self.settingsManager = settingsManager
     }
+    #endif
 
     func start() {
         guard defaultDeviceListenerBlock == nil else { return }
@@ -280,7 +292,17 @@ final class DeviceVolumeMonitor {
         if success {
             volumes[deviceID] = volume
         } else {
+            #if !APP_STORE
+            if let ddcController, ddcController.isDDCBacked(deviceID) {
+                let ddcVolume = Int(round(volume * 100))
+                ddcController.setVolume(for: deviceID, to: ddcVolume)
+                volumes[deviceID] = volume
+            } else {
+                logger.warning("Failed to set volume on device \(deviceID)")
+            }
+            #else
             logger.warning("Failed to set volume on device \(deviceID)")
+            #endif
         }
     }
 
@@ -310,9 +332,29 @@ final class DeviceVolumeMonitor {
         if success {
             muteStates[deviceID] = muted
         } else {
+            #if !APP_STORE
+            if let ddcController, ddcController.isDDCBacked(deviceID) {
+                if muted {
+                    ddcController.mute(for: deviceID)
+                } else {
+                    ddcController.unmute(for: deviceID)
+                }
+                muteStates[deviceID] = muted
+            } else {
+                logger.warning("Failed to set mute on device \(deviceID)")
+            }
+            #else
             logger.warning("Failed to set mute on device \(deviceID)")
+            #endif
         }
     }
+
+    #if !APP_STORE
+    /// Re-reads volume/mute states after DDC probe discovers (or loses) displays.
+    func refreshAfterDDCProbe() {
+        readAllStates()
+    }
+    #endif
 
     // MARK: - Input Device Control
 
@@ -569,6 +611,13 @@ final class DeviceVolumeMonitor {
 
     private func handleVolumeChanged(for deviceID: AudioDeviceID) {
         guard deviceID.isValid else { return }
+
+        #if !APP_STORE
+        // DDC-backed devices don't have real CoreAudio volume changes;
+        // ignore HAL callbacks (they always report 1.0)
+        if let ddcController, ddcController.isDDCBacked(deviceID) { return }
+        #endif
+
         let newVolume = deviceID.readOutputVolumeScalar()
         volumes[deviceID] = newVolume
         onVolumeChanged?(deviceID, newVolume)
@@ -622,6 +671,19 @@ final class DeviceVolumeMonitor {
     /// default volume (1.0) for 50-200ms after the device appears.
     private func readAllStates() {
         for device in deviceMonitor.outputDevices {
+            #if !APP_STORE
+            // For DDC-backed devices, use cached DDC volume instead of CoreAudio
+            if let ddcController, ddcController.isDDCBacked(device.id) {
+                if let ddcVolume = ddcController.getVolume(for: device.id) {
+                    volumes[device.id] = Float(ddcVolume) / 100.0
+                } else {
+                    volumes[device.id] = 0.5
+                }
+                muteStates[device.id] = ddcController.isMuted(for: device.id)
+                continue
+            }
+            #endif
+
             let volume = device.id.readOutputVolumeScalar()
             volumes[device.id] = volume
 

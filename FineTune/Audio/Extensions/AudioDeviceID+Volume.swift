@@ -1,6 +1,21 @@
 // FineTune/Audio/Extensions/AudioDeviceID+Volume.swift
 import AudioToolbox
 
+// MARK: - Volume Control Detection
+
+extension AudioDeviceID {
+    /// Returns true if this device supports CoreAudio volume control.
+    /// Monitors connected via HDMI/DisplayPort often return false here.
+    func hasOutputVolumeControl() -> Bool {
+        var address = AudioObjectPropertyAddress(
+            mSelector: kAudioHardwareServiceDeviceProperty_VirtualMainVolume,
+            mScope: kAudioDevicePropertyScopeOutput,
+            mElement: kAudioObjectPropertyElementMain
+        )
+        return AudioObjectHasProperty(self, &address)
+    }
+}
+
 // MARK: - Device Volume
 
 extension AudioDeviceID {

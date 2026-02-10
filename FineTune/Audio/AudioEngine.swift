@@ -13,6 +13,10 @@ final class AudioEngine {
     let volumeState: VolumeState
     let settingsManager: SettingsManager
 
+    #if !APP_STORE
+    let ddcController: DDCController
+    #endif
+
     private var taps: [pid_t: ProcessTapController] = [:]
     private var appliedPIDs: Set<pid_t> = []
     private var appDeviceRouting: [pid_t: String] = [:]  // pid → deviceUID (always explicit)
@@ -32,7 +36,17 @@ final class AudioEngine {
     private let autoSwitchGracePeriod: TimeInterval = 2.0
 
     var outputDevices: [AudioDevice] {
-        deviceMonitor.outputDevices
+        #if !APP_STORE
+        // Before DDC probe completes, show all devices (don't prematurely hide monitors)
+        guard ddcController.probeCompleted else {
+            return deviceMonitor.outputDevices
+        }
+        return deviceMonitor.outputDevices.filter { device in
+            device.id.hasOutputVolumeControl() || ddcController.isDDCBacked(device.id)
+        }
+        #else
+        return deviceMonitor.outputDevices
+        #endif
     }
 
     var inputDevices: [AudioDevice] {
@@ -43,11 +57,25 @@ final class AudioEngine {
         let manager = settingsManager ?? SettingsManager()
         self.settingsManager = manager
         self.volumeState = VolumeState(settingsManager: manager)
+
+        #if !APP_STORE
+        let ddc = DDCController(settingsManager: manager)
+        self.ddcController = ddc
+        self.deviceVolumeMonitor = DeviceVolumeMonitor(deviceMonitor: deviceMonitor, settingsManager: manager, ddcController: ddc)
+        #else
         self.deviceVolumeMonitor = DeviceVolumeMonitor(deviceMonitor: deviceMonitor, settingsManager: manager)
+        #endif
 
         Task { @MainActor in
             processMonitor.start()
             deviceMonitor.start()
+
+            #if !APP_STORE
+            ddc.onProbeCompleted = { [weak self] in
+                self?.deviceVolumeMonitor.refreshAfterDDCProbe()
+            }
+            ddc.start()
+            #endif
 
             // Start device volume monitor AFTER deviceMonitor.start() populates devices
             // This fixes the race condition where volumes were read before devices existed
