@@ -37,6 +37,15 @@ struct MenuBarPopupView: View {
     /// Local copy of app settings for binding
     @State private var localAppSettings: AppSettings = AppSettings()
 
+    /// Whether device priority edit mode is active
+    @State private var isEditingDevicePriority = false
+
+    /// Tracks which tab was active when edit mode started (for correct save on exit)
+    @State private var wasEditingInputDevices = false
+
+    /// Editable copy of device order for drag-and-drop reordering
+    @State private var editableDeviceOrder: [AudioDevice] = []
+
     /// Namespace for device toggle animation
     @Namespace private var deviceToggleNamespace
 
@@ -61,9 +70,18 @@ struct MenuBarPopupView: View {
                 } else {
                     deviceTabsHeader
                     Spacer()
-                    defaultDevicesStatus
+                    if isEditingDevicePriority {
+                        Text("Drag or type a number to set priority")
+                            .font(.system(size: 10))
+                            .foregroundStyle(DesignTokens.Colors.textTertiary.opacity(0.7))
+                    } else {
+                        defaultDevicesStatus
+                    }
                 }
                 Spacer()
+                if !isSettingsOpen {
+                    editPriorityButton
+                }
                 settingsButton
             }
             .padding(.bottom, DesignTokens.Spacing.xs)
@@ -81,7 +99,7 @@ struct MenuBarPopupView: View {
                         deviceVolumeMonitor.setSystemFollowDefault()
                     },
                     deviceVolumeMonitor: deviceVolumeMonitor,
-                    outputDevices: audioEngine.outputDevices
+                    outputDevices: sortedDevices
                 )
                 .transition(.asymmetric(
                     insertion: .move(edge: .trailing).combined(with: .opacity),
@@ -105,10 +123,15 @@ struct MenuBarPopupView: View {
             localAppSettings = audioEngine.settingsManager.appSettings
         }
         .onChange(of: audioEngine.outputDevices) { _, _ in
+            exitEditModeSaving()
             updateSortedDevices()
         }
         .onChange(of: audioEngine.inputDevices) { _, _ in
+            exitEditModeSaving()
             updateSortedInputDevices()
+        }
+        .onChange(of: showingInputDevices) { _, _ in
+            exitEditModeSaving()
         }
         .onChange(of: localAppSettings) { _, newValue in
             audioEngine.settingsManager.updateAppSettings(newValue)
@@ -118,6 +141,7 @@ struct MenuBarPopupView: View {
         }
         .onReceive(NotificationCenter.default.publisher(for: NSWindow.didResignKeyNotification)) { _ in
             isPopupVisible = false
+            exitEditModeSaving()
         }
         .background {
             // Hidden button to handle ⌘, keyboard shortcut for toggling settings
@@ -125,6 +149,28 @@ struct MenuBarPopupView: View {
                 .keyboardShortcut(",", modifiers: .command)
                 .hidden()
         }
+    }
+
+    // MARK: - Edit Priority Button
+
+    /// Edit priority button — pencil ↔ checkmark, styled to match settingsButton
+    private var editPriorityButton: some View {
+        Button {
+            toggleDevicePriorityEdit()
+        } label: {
+            Image(systemName: isEditingDevicePriority ? "checkmark" : "pencil")
+                .font(.system(size: 12, weight: isEditingDevicePriority ? .bold : .regular))
+                .symbolRenderingMode(.hierarchical)
+                .foregroundStyle(DesignTokens.Colors.interactiveDefault)
+                .frame(
+                    minWidth: DesignTokens.Dimensions.minTouchTarget,
+                    minHeight: DesignTokens.Dimensions.minTouchTarget
+                )
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .animation(.spring(response: 0.3, dampingFraction: 0.75), value: isEditingDevicePriority)
+        .help(isEditingDevicePriority ? "Done reordering" : "Reorder devices")
     }
 
     // MARK: - Settings Button
@@ -151,6 +197,7 @@ struct MenuBarPopupView: View {
 
     private func toggleSettings() {
         guard !isSettingsAnimating else { return }
+        exitEditModeSaving()
         isSettingsAnimating = true
 
         withAnimation(.spring(response: 0.35, dampingFraction: 0.85)) {
@@ -315,7 +362,7 @@ struct MenuBarPopupView: View {
         let devices = showingInputDevices ? sortedInputDevices : sortedDevices
         let threshold = deviceScrollThreshold
 
-        if devices.count > threshold {
+        if !isEditingDevicePriority && devices.count > threshold {
             ScrollView {
                 devicesContent
             }
@@ -328,7 +375,47 @@ struct MenuBarPopupView: View {
 
     private var devicesContent: some View {
         VStack(spacing: DesignTokens.Spacing.xs) {
-            if showingInputDevices {
+            if isEditingDevicePriority {
+                // Edit mode: drag-and-drop reordering (works for both output and input)
+                let defaultDeviceID = showingInputDevices
+                    ? deviceVolumeMonitor.defaultInputDeviceID
+                    : deviceVolumeMonitor.defaultDeviceID
+                ForEach(Array(editableDeviceOrder.enumerated()), id: \.element.uid) { index, device in
+                    DeviceEditRow(
+                        device: device,
+                        priorityIndex: index,
+                        isDefault: device.id == defaultDeviceID,
+                        isInputDevice: showingInputDevices,
+                        deviceCount: editableDeviceOrder.count,
+                        onReorder: { newIndex in
+                            guard let fromIndex = editableDeviceOrder.firstIndex(where: { $0.uid == device.uid }) else { return }
+                            guard newIndex != fromIndex, newIndex >= 0, newIndex < editableDeviceOrder.count else { return }
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                                editableDeviceOrder.move(
+                                    fromOffsets: IndexSet(integer: fromIndex),
+                                    toOffset: newIndex > fromIndex ? newIndex + 1 : newIndex
+                                )
+                            }
+                        }
+                    )
+                    .draggable(device.uid) {
+                        Text(device.name)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 6))
+                    }
+                    .dropDestination(for: String.self) { droppedUIDs, _ in
+                        guard let droppedUID = droppedUIDs.first,
+                              let fromIndex = editableDeviceOrder.firstIndex(where: { $0.uid == droppedUID }),
+                              let toIndex = editableDeviceOrder.firstIndex(where: { $0.uid == device.uid }),
+                              fromIndex != toIndex else { return false }
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                            editableDeviceOrder.move(fromOffsets: IndexSet(integer: fromIndex), toOffset: toIndex > fromIndex ? toIndex + 1 : toIndex)
+                        }
+                        return true
+                    }
+                }
+            } else if showingInputDevices {
                 ForEach(sortedInputDevices) { device in
                     InputDeviceRow(
                         device: device,
@@ -429,7 +516,7 @@ struct MenuBarPopupView: View {
                 app: app,
                 volume: audioEngine.getVolume(for: app),
                 isMuted: audioEngine.getMute(for: app),
-                devices: audioEngine.outputDevices,
+                devices: sortedDevices,
                 selectedDeviceUID: deviceUID,
                 selectedDeviceUIDs: audioEngine.getSelectedDeviceUIDs(for: app),
                 isFollowingDefault: audioEngine.isFollowingDefault(for: app),
@@ -488,7 +575,7 @@ struct MenuBarPopupView: View {
             appInfo: info,
             icon: displayableApp.icon,
             volume: audioEngine.getVolumeForInactive(identifier: identifier),
-            devices: audioEngine.outputDevices,
+            devices: sortedDevices,
             selectedDeviceUID: audioEngine.getDeviceRoutingForInactive(identifier: identifier),
             selectedDeviceUIDs: audioEngine.getSelectedDeviceUIDsForInactive(identifier: identifier),
             isFollowingDefault: audioEngine.isFollowingDefaultForInactive(identifier: identifier),
@@ -551,22 +638,53 @@ struct MenuBarPopupView: View {
         }
     }
 
-    // MARK: - Helpers
+    // MARK: - Device Priority Edit
 
-    /// Recomputes sorted output devices - alphabetical order only (no "default first" reordering)
-    private func updateSortedDevices() {
-        let devices = audioEngine.outputDevices
-        sortedDevices = devices.sorted { lhs, rhs in
-            lhs.name.localizedCaseInsensitiveCompare(rhs.name) == .orderedAscending
+    private func toggleDevicePriorityEdit() {
+        if isEditingDevicePriority {
+            // Exiting edit mode: persist to the correct priority list
+            persistEditableOrder()
+            isEditingDevicePriority = false
+            if wasEditingInputDevices {
+                updateSortedInputDevices()
+            } else {
+                updateSortedDevices()
+            }
+        } else {
+            // Entering edit mode: copy the current tab's sorted devices
+            wasEditingInputDevices = showingInputDevices
+            editableDeviceOrder = showingInputDevices ? sortedInputDevices : sortedDevices
+            isEditingDevicePriority = true
         }
     }
 
-    /// Recomputes sorted input devices - alphabetical order
-    private func updateSortedInputDevices() {
-        let devices = audioEngine.inputDevices
-        sortedInputDevices = devices.sorted { lhs, rhs in
-            lhs.name.localizedCaseInsensitiveCompare(rhs.name) == .orderedAscending
+    /// Persists the editable order to the correct priority list.
+    private func persistEditableOrder() {
+        let uids = editableDeviceOrder.map(\.uid)
+        if wasEditingInputDevices {
+            audioEngine.settingsManager.setInputDevicePriorityOrder(uids)
+        } else {
+            audioEngine.settingsManager.setDevicePriorityOrder(uids)
         }
+    }
+
+    /// Exits edit mode, saving the current order. Called on edge cases like device changes.
+    private func exitEditModeSaving() {
+        guard isEditingDevicePriority else { return }
+        persistEditableOrder()
+        isEditingDevicePriority = false
+    }
+
+    // MARK: - Helpers
+
+    /// Recomputes sorted output devices using priority order
+    private func updateSortedDevices() {
+        sortedDevices = audioEngine.prioritySortedOutputDevices
+    }
+
+    /// Recomputes sorted input devices using priority order
+    private func updateSortedInputDevices() {
+        sortedInputDevices = audioEngine.prioritySortedInputDevices
     }
 
     /// Activates an app, bringing it to foreground and restoring minimized windows
