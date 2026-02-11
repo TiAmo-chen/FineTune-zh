@@ -12,6 +12,8 @@ struct DeviceEditRow: View {
     let deviceCount: Int
     let onReorder: (Int) -> Void
 
+    @State private var copied = false
+
     var body: some View {
         HStack(spacing: DesignTokens.Spacing.sm) {
             // Drag handle
@@ -46,6 +48,7 @@ struct DeviceEditRow: View {
                 .font(isDefault ? DesignTokens.Typography.rowNameBold : DesignTokens.Typography.rowName)
                 .lineLimit(1)
                 .frame(maxWidth: .infinity, alignment: .leading)
+                .help(device.uid)
 
             // DEFAULT badge
             if isDefault {
@@ -59,6 +62,23 @@ struct DeviceEditRow: View {
                             .fill(.white.opacity(0.1))
                     )
             }
+
+            // Copy UID button (always at far right)
+            Button {
+                NSPasteboard.general.clearContents()
+                NSPasteboard.general.setString(device.uid, forType: .string)
+                copied = true
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                    copied = false
+                }
+            } label: {
+                Image(systemName: copied ? "checkmark" : "doc.on.doc")
+                    .font(.system(size: 11))
+                    .foregroundStyle(copied ? .green : DesignTokens.Colors.textTertiary)
+                    .contentTransition(.symbolEffect(.replace))
+            }
+            .buttonStyle(.plain)
+            .help("Copy UID")
         }
         .frame(height: DesignTokens.Dimensions.rowContentHeight)
         .hoverableRow()
