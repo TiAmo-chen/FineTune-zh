@@ -53,6 +53,86 @@ final class AudioEngine {
         deviceMonitor.inputDevices
     }
 
+    /// Output devices sorted by user-defined priority order.
+    /// Devices in the priority list appear in that order; new/unknown devices are appended alphabetically.
+    var prioritySortedOutputDevices: [AudioDevice] {
+        let devices = outputDevices
+        let priorityOrder = settingsManager.devicePriorityOrder
+        let devicesByUID = Dictionary(devices.map { ($0.uid, $0) }, uniquingKeysWith: { _, latest in latest })
+
+        // Collect devices in priority order (skip stale UIDs)
+        var sorted: [AudioDevice] = []
+        var seen = Set<String>()
+        for uid in priorityOrder {
+            if let device = devicesByUID[uid] {
+                sorted.append(device)
+                seen.insert(uid)
+            }
+        }
+
+        // Append new devices alphabetically
+        let remaining = devices
+            .filter { !seen.contains($0.uid) }
+            .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+        sorted.append(contentsOf: remaining)
+
+        return sorted
+    }
+
+    /// Input devices sorted by user-defined priority order.
+    var prioritySortedInputDevices: [AudioDevice] {
+        let devices = inputDevices
+        let priorityOrder = settingsManager.inputDevicePriorityOrder
+        let devicesByUID = Dictionary(devices.map { ($0.uid, $0) }, uniquingKeysWith: { _, latest in latest })
+
+        var sorted: [AudioDevice] = []
+        var seen = Set<String>()
+        for uid in priorityOrder {
+            if let device = devicesByUID[uid] {
+                sorted.append(device)
+                seen.insert(uid)
+            }
+        }
+
+        let remaining = devices
+            .filter { !seen.contains($0.uid) }
+            .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+        sorted.append(contentsOf: remaining)
+
+        return sorted
+    }
+
+    /// Registers any output devices not yet in the priority list.
+    /// Call this when devices change (not from computed properties).
+    func registerNewDevicesInPriority() {
+        for device in outputDevices {
+            settingsManager.ensureDeviceInPriority(device.uid)
+        }
+        for device in inputDevices {
+            settingsManager.ensureInputDeviceInPriority(device.uid)
+        }
+    }
+
+    /// Finds the highest-priority connected device excluding the given UID.
+    func findPriorityFallbackDevice(excluding deviceUID: String) -> (uid: String, name: String)? {
+        let priorityOrder = settingsManager.devicePriorityOrder
+        let connectedDevices = outputDevices
+        let connectedByUID = Dictionary(connectedDevices.map { ($0.uid, $0) }, uniquingKeysWith: { _, latest in latest })
+
+        // Walk priority list, return first connected device that isn't excluded
+        for uid in priorityOrder {
+            guard uid != deviceUID, let device = connectedByUID[uid] else { continue }
+            return (uid: device.uid, name: device.name)
+        }
+
+        // Ultimate fallback: any connected device
+        if let device = connectedDevices.first(where: { $0.uid != deviceUID }) {
+            return (uid: device.uid, name: device.name)
+        }
+
+        return nil
+    }
+
     init(settingsManager: SettingsManager? = nil) {
         let manager = settingsManager ?? SettingsManager()
         self.settingsManager = manager
@@ -127,6 +207,7 @@ final class AudioEngine {
             deviceMonitor.onInputDeviceConnected = { [weak self] deviceUID, deviceName in
                 self?.logger.info("Input device connected: \(deviceName) (\(deviceUID))")
                 self?.lastInputDeviceConnectTime = Date()
+                self?.settingsManager.ensureInputDeviceInPriority(deviceUID)
             }
 
             deviceVolumeMonitor.onDefaultDeviceChanged = { [weak self] newDefaultUID in
@@ -140,6 +221,7 @@ final class AudioEngine {
             }
 
             applyPersistedSettings()
+            registerNewDevicesInPriority()
 
             // Restore locked input device if feature is enabled
             if manager.appSettings.lockInputDevice {
@@ -660,14 +742,13 @@ final class AudioEngine {
 
     /// Called when device disappears - updates routing and switches taps immediately
     private func handleDeviceDisconnected(_ deviceUID: String, name deviceName: String) {
-        // Get fallback device from DeviceVolumeMonitor's cached default (not direct Core Audio)
-        // This ensures we use kAudioHardwarePropertyDefaultOutputDevice, not DefaultSystemOutputDevice
+        // Use priority-based fallback, then system default, then any device
         let fallbackDevice: (uid: String, name: String)?
-        if let defaultUID = deviceVolumeMonitor.defaultDeviceUID,
-           let device = deviceMonitor.device(for: defaultUID) {
+        if let priorityFallback = findPriorityFallbackDevice(excluding: deviceUID) {
+            fallbackDevice = priorityFallback
+        } else if let defaultUID = deviceVolumeMonitor.defaultDeviceUID,
+                  let device = deviceMonitor.device(for: defaultUID) {
             fallbackDevice = (uid: defaultUID, name: device.name)
-        } else if let firstDevice = deviceMonitor.outputDevices.first {
-            fallbackDevice = (uid: firstDevice.uid, name: firstDevice.name)
         } else {
             fallbackDevice = nil
         }
@@ -752,6 +833,9 @@ final class AudioEngine {
 
     /// Called when a device appears - switches pinned apps back to their preferred device
     private func handleDeviceConnected(_ deviceUID: String, name deviceName: String) {
+        // Register newly connected device in priority list
+        settingsManager.ensureDeviceInPriority(deviceUID)
+
         var affectedApps: [AudioApp] = []
         var tapsToSwitch: [ProcessTapController] = []
 
