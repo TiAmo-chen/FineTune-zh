@@ -94,7 +94,7 @@ final class DDCService: @unchecked Sendable {
     private let numWriteCycles = 2               // Write command twice per attempt
     private let readSleepTime: UInt32 = 50_000   // 50ms wait before read
     private let retryCount = 5                   // Full write+read retry cycles
-    private let retrySleepTime: UInt32 = 20_000  // 20ms between retries
+    private let retrySleepTime: UInt32 = 100_000 // 100ms between retries
 
     init(service: CFTypeRef) {
         self.service = service

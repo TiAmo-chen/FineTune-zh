@@ -24,6 +24,7 @@ final class DDCController {
     private var services: [AudioDeviceID: DDCService] = [:]
     private var deviceUIDs: [AudioDeviceID: String] = [:]  // For persistence keying
     private var debounceTimers: [AudioDeviceID: DispatchWorkItem] = [:]
+    private var probeWorkItem: DispatchWorkItem?
 
     private let ddcQueue = DispatchQueue(label: "com.finetune.ddc", qos: .userInitiated)
     private let settingsManager: SettingsManager
@@ -322,10 +323,16 @@ final class DDCController {
             object: nil,
             queue: .main
         ) { [weak self] _ in
-            Task { @MainActor in
-                self?.logger.debug("Display configuration changed, re-probing DDC")
-                self?.probe()
+            guard let self else { return }
+            self.probeWorkItem?.cancel()
+            let item = DispatchWorkItem { [weak self] in
+                Task { @MainActor in
+                    self?.logger.debug("Display configuration changed, re-probing DDC (after delay)")
+                    self?.probe()
+                }
             }
+            self.probeWorkItem = item
+            DispatchQueue.main.asyncAfter(deadline: .now() + 3.0, execute: item)
         }
     }
 }
