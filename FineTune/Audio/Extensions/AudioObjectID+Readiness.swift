@@ -25,6 +25,7 @@ extension AudioObjectID {
     ///   - timeout: Maximum time to wait in seconds (default: 1.0)
     ///   - pollInterval: Time between readiness checks in seconds (default: 0.01)
     /// - Returns: `true` if device became ready within timeout, `false` otherwise.
+    /// - Warning: This method blocks the calling thread via CFRunLoopRunInMode. Do not call from the main thread without careful consideration.
     /// - Note: Uses CFRunLoopRunInMode to allow Core Audio HAL events to be processed
     ///         during the wait. This is critical for aggregate device initialization.
     func waitUntilReady(timeout: TimeInterval = 1.0, pollInterval: TimeInterval = 0.01) -> Bool {
@@ -52,6 +53,6 @@ extension AudioObjectID {
         )
         var size: UInt32 = 0
         let status = AudioObjectGetPropertyDataSize(self, &address, 0, nil, &size)
-        return status == noErr && size > UInt32(MemoryLayout<AudioBufferList>.size)
+        return status == noErr && size >= UInt32(MemoryLayout<AudioBufferList>.size)
     }
 }
