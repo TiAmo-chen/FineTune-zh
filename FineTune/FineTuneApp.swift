@@ -80,6 +80,11 @@ struct FineTuneApp: App {
     }
 
     init() {
+        // Install crash handler to clean up aggregate devices on abnormal exit
+        CrashGuard.install()
+        // Destroy any orphaned aggregate devices from previous crashes
+        OrphanedTapCleanup.destroyOrphanedDevices()
+
         let settings = SettingsManager()
         let engine = AudioEngine(settingsManager: settings)
         _audioEngine = State(initialValue: engine)
