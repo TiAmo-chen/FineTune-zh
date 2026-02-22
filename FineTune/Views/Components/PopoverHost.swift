@@ -147,7 +147,10 @@ struct PopoverHost<Content: View>: NSViewRepresentable {
         }
 
         func shouldUpdateContent(for contentVersion: Int?) -> Bool {
-            contentVersion != lastContentVersion
+            // Backward-compatible behavior: callers that don't provide a version
+            // should still refresh content every update while open.
+            guard let contentVersion else { return true }
+            return contentVersion != lastContentVersion
         }
 
         func dismissPanel() {
