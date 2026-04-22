@@ -61,7 +61,7 @@ struct EQPanelView: View {
                         .onChange(of: settings.isEnabled) { _, _ in
                             onSettingsChanged(settings)
                         }
-                    Text("EQ")
+                    Text("均衡器")
                         .font(DesignTokens.Typography.pickerText)
                         .foregroundStyle(.primary)
                 }
@@ -86,7 +86,7 @@ struct EQPanelView: View {
 
                 // Preset picker on right (always visible)
                 HStack(spacing: DesignTokens.Spacing.sm) {
-                    Text("Preset")
+                    Text("预设")
                         .font(DesignTokens.Typography.pickerText)
                         .foregroundStyle(DesignTokens.Colors.textSecondary)
 
@@ -151,15 +151,15 @@ struct EQPanelView: View {
                 .foregroundStyle(DesignTokens.Colors.interactiveDefault)
         }
         .buttonStyle(.plain)
-        .help("Save current EQ as preset")
-        .accessibilityLabel("Save current EQ curve as a new preset")
+        .help("保存当前 EQ 为预设")
+        .accessibilityLabel("保存当前 EQ 曲线为新预设")
     }
 
     // MARK: - Save Preset Field
 
     private var savePresetField: some View {
         HStack(spacing: DesignTokens.Spacing.xs) {
-            TextField("Preset name", text: $savePresetName)
+            TextField("预设名称", text: $savePresetName)
                 .textFieldStyle(.plain)
                 .font(.system(size: 11, weight: .medium))
                 .focused($isSaveFieldFocused)
@@ -179,8 +179,8 @@ struct EQPanelView: View {
             }
             .buttonStyle(.plain)
             .disabled(savePresetName.trimmingCharacters(in: .whitespaces).isEmpty)
-            .help("Save preset")
-            .accessibilityLabel("Confirm save preset")
+            .help("保存预设")
+            .accessibilityLabel("确认保存预设")
 
             Button {
                 cancelSave()
@@ -190,8 +190,8 @@ struct EQPanelView: View {
                     .foregroundStyle(DesignTokens.Colors.textTertiary)
             }
             .buttonStyle(.plain)
-            .help("Cancel")
-            .accessibilityLabel("Cancel saving preset")
+            .help("取消")
+            .accessibilityLabel("取消保存预设")
         }
         .padding(.horizontal, DesignTokens.Spacing.sm)
         .padding(.vertical, 4)
@@ -242,15 +242,15 @@ struct EQPanelView: View {
                 .foregroundStyle(DesignTokens.Colors.interactiveDefault)
         }
         .buttonStyle(.plain)
-        .help("Rename preset")
-        .accessibilityLabel("Rename current preset")
+        .help("重命名预设")
+        .accessibilityLabel("重命名当前预设")
     }
 
     // MARK: - Rename Preset Field
 
     private var renamePresetField: some View {
         HStack(spacing: DesignTokens.Spacing.xs) {
-            TextField("Preset name", text: $renamePresetName)
+            TextField("预设名称", text: $renamePresetName)
                 .textFieldStyle(.plain)
                 .font(.system(size: 11, weight: .medium))
                 .focused($isRenameFieldFocused)
@@ -270,8 +270,8 @@ struct EQPanelView: View {
             }
             .buttonStyle(.plain)
             .disabled(renamePresetName.trimmingCharacters(in: .whitespaces).isEmpty)
-            .help("Confirm rename")
-            .accessibilityLabel("Confirm rename preset")
+            .help("确认重命名")
+            .accessibilityLabel("确认重命名预设")
 
             Button {
                 cancelRename()
@@ -281,8 +281,8 @@ struct EQPanelView: View {
                     .foregroundStyle(DesignTokens.Colors.textTertiary)
             }
             .buttonStyle(.plain)
-            .help("Cancel")
-            .accessibilityLabel("Cancel renaming preset")
+            .help("取消")
+            .accessibilityLabel("取消重命名预设")
         }
         .padding(.horizontal, DesignTokens.Spacing.sm)
         .padding(.vertical, 4)

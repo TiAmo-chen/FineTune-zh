@@ -52,7 +52,7 @@ struct DeviceEditRow: View {
 
             // DEFAULT badge
             if isDefault {
-                Text("DEFAULT")
+                Text("默认")
                     .font(.system(size: 9, weight: .semibold))
                     .foregroundStyle(DesignTokens.Colors.textSecondary)
                     .padding(.horizontal, 6)
@@ -79,7 +79,7 @@ struct DeviceEditRow: View {
                     .contentTransition(.symbolEffect(.replace))
             }
             .buttonStyle(.plain)
-            .help("Copy UID")
+            .help("复制 UID")
         }
         .frame(height: DesignTokens.Dimensions.rowContentHeight)
         .hoverableRow()
@@ -155,7 +155,7 @@ private struct EditablePriority: View {
         .contentShape(Rectangle())
         .onTapGesture { if !isEditing { startEditing() } }
         .accessibilityAddTraits(.isButton)
-        .accessibilityLabel("Edit priority position")
+        .accessibilityLabel("编辑优先级位置")
         .onHover { hovering in
             isHovered = hovering
             if hovering {

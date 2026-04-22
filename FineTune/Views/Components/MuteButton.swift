@@ -12,8 +12,8 @@ struct MuteButton: View {
             isMuted: isMuted,
             mutedIcon: "speaker.slash.fill",
             unmutedIcon: "speaker.wave.2.fill",
-            mutedHelp: "Unmute",
-            unmutedHelp: "Mute",
+            mutedHelp: "取消静音",
+            unmutedHelp: "静音",
             action: action
         )
     }
@@ -30,8 +30,8 @@ struct InputMuteButton: View {
             isMuted: isMuted,
             mutedIcon: "mic.slash.fill",
             unmutedIcon: "mic.fill",
-            mutedHelp: "Unmute microphone",
-            unmutedHelp: "Mute microphone",
+            mutedHelp: "取消麦克风静音",
+            unmutedHelp: "麦克风静音",
             action: action
         )
     }
@@ -112,14 +112,14 @@ private struct MuteButtonPressStyle: ButtonStyle {
         HStack(spacing: DesignTokens.Spacing.lg) {
             VStack {
                 MuteButton(isMuted: false) {}
-                Text("Unmuted")
+                Text("未静音")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
 
             VStack {
                 MuteButton(isMuted: true) {}
-                Text("Muted")
+                Text("已静音")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -132,14 +132,14 @@ private struct MuteButtonPressStyle: ButtonStyle {
         HStack(spacing: DesignTokens.Spacing.lg) {
             VStack {
                 InputMuteButton(isMuted: false) {}
-                Text("Unmuted")
+                Text("未静音")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
 
             VStack {
                 InputMuteButton(isMuted: true) {}
-                Text("Muted")
+                Text("已静音")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -158,7 +158,7 @@ private struct MuteButtonPressStyle: ButtonStyle {
                         isMuted.toggle()
                     }
 
-                    Text(isMuted ? "Muted" : "Playing")
+                    Text(isMuted ? "已静音" : "播放中")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }

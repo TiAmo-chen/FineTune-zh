@@ -48,7 +48,7 @@ struct AppEditRow: View {
                 }
                 .buttonStyle(.plain)
                 .onHover { isPinHovered = $0 }
-                .help(isPinned ? "Unpin app" : "Pin app")
+                .help(isPinned ? "取消固定应用" : "固定应用")
                 .animation(DesignTokens.Animation.quick, value: isPinHovered)
             }
 
@@ -69,7 +69,7 @@ struct AppEditRow: View {
             }
             .buttonStyle(.plain)
             .onHover { isEyeHovered = $0 }
-            .help(isIgnored ? "Stop ignoring" : "Ignore app")
+            .help(isIgnored ? "取消忽略" : "忽略应用")
             .animation(DesignTokens.Animation.quick, value: isEyeHovered)
         }
         .frame(height: DesignTokens.Dimensions.rowContentHeight)

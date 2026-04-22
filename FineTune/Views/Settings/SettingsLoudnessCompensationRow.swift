@@ -13,11 +13,11 @@ struct SettingsLoudnessCompensationRow: View {
                 .frame(width: DesignTokens.Dimensions.settingsIconWidth, alignment: .center)
 
             VStack(alignment: .leading, spacing: 2) {
-                Text("Loudness Equalization")
+                Text("响度均衡")
                     .font(DesignTokens.Typography.rowName)
                     .foregroundStyle(DesignTokens.Colors.textPrimary)
 
-                Text("Balances frequency response and volume levels at low listening levels")
+                Text("在低音量时平衡频率响应和音量")
                     .font(DesignTokens.Typography.caption)
                     .foregroundStyle(DesignTokens.Colors.textTertiary)
                     .lineLimit(2)

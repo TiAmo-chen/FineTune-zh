@@ -12,9 +12,9 @@ struct SettingsUpdateRow: View {
         if let date = lastCheckDate {
             let formatter = RelativeDateTimeFormatter()
             formatter.unitsStyle = .abbreviated
-            return "Version \(version) · Last checked \(formatter.localizedString(for: date, relativeTo: .now))"
+            return "版本 \(version) · 上次检查 \(formatter.localizedString(for: date, relativeTo: .now))"
         }
-        return "Version \(version) · Never checked"
+        return "版本 \(version) · 从未检查"
     }
 
     var body: some View {
@@ -25,7 +25,7 @@ struct SettingsUpdateRow: View {
 
             VStack(alignment: .leading, spacing: 2) {
                 HStack {
-                    Text("Check for updates automatically")
+                    Text("自动检查更新")
                         .font(DesignTokens.Typography.rowName)
                         .foregroundStyle(DesignTokens.Colors.textPrimary)
 
@@ -43,7 +43,7 @@ struct SettingsUpdateRow: View {
 
             Spacer()
 
-            Button("Check for Updates") {
+            Button("检查更新") {
                 onCheckNow()
             }
             .buttonStyle(.plain)

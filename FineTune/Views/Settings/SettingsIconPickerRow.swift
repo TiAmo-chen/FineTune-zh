@@ -24,7 +24,7 @@ struct SettingsIconPickerRow: View {
                     .font(DesignTokens.Typography.rowName)
                     .foregroundStyle(DesignTokens.Colors.textPrimary)
 
-                Text(needsRestart ? "Restart to apply changes" : "Choose your preferred icon style")
+                Text(needsRestart ? "重启以应用更改" : "选择您喜欢的图标样式")
                     .font(DesignTokens.Typography.caption)
                     .foregroundStyle(DesignTokens.Colors.textTertiary)
             }
@@ -33,7 +33,7 @@ struct SettingsIconPickerRow: View {
 
             // Restart button when needed
             if needsRestart {
-                Button("Restart") {
+                Button("重启") {
                     restartApp()
                 }
                 .buttonStyle(.plain)

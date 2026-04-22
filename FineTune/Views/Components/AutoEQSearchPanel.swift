@@ -189,11 +189,11 @@ struct AutoEQSearchPanel: View {
                 .font(.system(size: 20))
                 .foregroundStyle(DesignTokens.Colors.autoEQEmptyIcon)
 
-            Text("No correction active")
+            Text("未启用校正")
                 .font(.system(size: 11, weight: .medium))
                 .foregroundStyle(DesignTokens.Colors.textTertiary)
 
-            Text("Search or pick a favorite below")
+            Text("搜索或选择下方收藏")
                 .font(.system(size: 9))
                 .foregroundStyle(DesignTokens.Colors.textQuaternary)
         }
@@ -209,7 +209,7 @@ struct AutoEQSearchPanel: View {
         )
         .padding(DesignTokens.Spacing.sm)
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("No correction active. Search or pick a favorite below.")
+        .accessibilityLabel("未启用校正。搜索或选择下方收藏。")
     }
 
     // MARK: - Loading Placeholder
@@ -218,7 +218,7 @@ struct AutoEQSearchPanel: View {
         HStack(spacing: DesignTokens.Spacing.sm) {
             ProgressView()
                 .controlSize(.small)
-            Text("Loading profile...")
+            Text("正在加载配置...")
                 .font(.system(size: 11))
                 .foregroundStyle(DesignTokens.Colors.textTertiary)
         }
@@ -280,7 +280,7 @@ struct AutoEQSearchPanel: View {
                     .buttonStyle(.plain)
                     .onHover { starHoveredID = $0 ? id : nil }
                     .animation(DesignTokens.Animation.hover, value: isStarHovered)
-                    .accessibilityLabel(isFavorited ? "Remove from favorites" : "Add to favorites")
+.accessibilityLabel(isFavorited ? "取消收藏" : "添加收藏")
 
                     // Remove button
                     Button {
@@ -298,20 +298,20 @@ struct AutoEQSearchPanel: View {
                     }
                     .buttonStyle(.plain)
                     .whenHovered { hoveredID = $0 ? "_remove" : nil }
-                    .accessibilityLabel("Remove correction profile")
-                    .accessibilityHint("Returns to no correction state")
+                    .accessibilityLabel("移除校正配置")
+                    .accessibilityHint("返回无校正状态")
                 }
             }
 
             // Mini toggle switches
             HStack(spacing: 10) {
                 miniToggle(
-                    label: "Correction",
+                    label: "校正",
                     isOn: isCorrectionEnabled
                 ) { onCorrectionToggle?(!isCorrectionEnabled) }
 
                 miniToggle(
-                    label: "Preamp",
+                    label: "前置放大",
                     isOn: preampEnabled
                 ) { onPreampToggle?() }
 
@@ -348,7 +348,7 @@ struct AutoEQSearchPanel: View {
         }
         .accessibilityElement(children: .combine)
         .accessibilityLabel(label)
-        .accessibilityValue(isOn ? "On" : "Off")
+        .accessibilityValue(isOn ? "开" : "关")
     }
 
     // MARK: - Search Field
@@ -359,15 +359,15 @@ struct AutoEQSearchPanel: View {
                 .font(.system(size: 12))
                 .foregroundStyle(DesignTokens.Colors.textTertiary)
 
-            TextField("Search headphones...", text: $searchText)
+            TextField("搜索耳机...", text: $searchText)
                 .textFieldStyle(.plain)
                 .font(.system(size: 12))
                 .foregroundStyle(DesignTokens.Colors.textPrimary)
                 .focused($isSearchFocused)
-                .accessibilityLabel("Search headphones")
+                .accessibilityLabel("搜索耳机")
 
             if !searchText.isEmpty {
-                Button("Clear search", systemImage: "xmark.circle.fill") {
+                Button("清除搜索", systemImage: "xmark.circle.fill") {
                     searchText = ""
                 }
                 .labelStyle(.iconOnly)
@@ -388,7 +388,7 @@ struct AutoEQSearchPanel: View {
             HStack(spacing: DesignTokens.Spacing.sm) {
                 ProgressView()
                     .controlSize(.small)
-                Text("Loading headphone catalog...")
+                Text("正在加载耳机目录...")
                     .font(.system(size: 11))
                     .foregroundStyle(DesignTokens.Colors.textTertiary)
             }
@@ -396,7 +396,7 @@ struct AutoEQSearchPanel: View {
         } else if debouncedQuery.isEmpty {
             let favorites = resolvedFavorites
             if favorites.isEmpty {
-                Text("Type to search headphones")
+                Text("输入以搜索耳机")
                     .font(.system(size: 11))
                     .foregroundStyle(DesignTokens.Colors.textTertiary)
                     .frame(maxWidth: .infinity, minHeight: listHeight)
@@ -404,7 +404,7 @@ struct AutoEQSearchPanel: View {
                 ScrollViewReader { proxy in
                     ScrollView {
                         LazyVStack(spacing: 2) {
-                            Text("FAVORITES")
+                            Text("收藏")
                                 .font(.system(size: 9, weight: .bold))
                                 .foregroundStyle(DesignTokens.Colors.textTertiary)
                                 .tracking(1.0)
@@ -427,7 +427,7 @@ struct AutoEQSearchPanel: View {
                 }
             }
         } else if results.isEmpty {
-            Text("No profiles found")
+            Text("未找到配置")
                 .font(.system(size: 11))
                 .foregroundStyle(DesignTokens.Colors.textTertiary)
                 .frame(maxWidth: .infinity, minHeight: listHeight)
@@ -487,7 +487,7 @@ struct AutoEQSearchPanel: View {
             HStack {
                 Image(systemName: "square.and.arrow.down")
                     .font(.system(size: 10))
-                Text("Import ParametricEQ.txt...")
+                Text("导入 ParametricEQ.txt...")
                     .font(.system(size: 11))
             }
             .foregroundStyle(DesignTokens.Colors.textSecondary)
@@ -501,8 +501,8 @@ struct AutoEQSearchPanel: View {
         }
         .buttonStyle(.plain)
         .whenHovered { hoveredID = $0 ? "_import" : nil }
-        .accessibilityLabel("Import custom profile")
-        .accessibilityHint("Opens file picker for ParametricEQ.txt files")
+        .accessibilityLabel("导入自定义配置")
+        .accessibilityHint("打开 ParametricEQ.txt 文件选择器")
         .padding(.horizontal, DesignTokens.Spacing.xs)
         .padding(.bottom, DesignTokens.Spacing.xs)
     }
@@ -529,13 +529,13 @@ struct AutoEQSearchPanel: View {
         let total = cachedSearchResult.totalCount
         let shown = cachedSearchResult.entries.count
         if total > shown {
-            Text("Showing \(shown) of \(total) results")
+            Text("显示 \(shown) / \(total) 结果")
                 .font(.system(size: 9))
                 .foregroundStyle(DesignTokens.Colors.textTertiary)
                 .frame(maxWidth: .infinity, alignment: .center)
                 .padding(.vertical, DesignTokens.Spacing.xxs)
         } else if total > 0 {
-            Text("\(total) results")
+            Text("\(total) 结果")
                 .font(.system(size: 9))
                 .foregroundStyle(DesignTokens.Colors.textTertiary)
                 .frame(maxWidth: .infinity, alignment: .center)
@@ -605,7 +605,7 @@ struct AutoEQSearchPanel: View {
         .accessibilityElement(children: .combine)
         .accessibilityLabel(entry.name)
         .accessibilityAddTraits(isSelected ? .isSelected : [])
-        .accessibilityHint("Apply this correction profile")
+        .accessibilityHint("应用此校正配置")
     }
 
     // MARK: - Star Button (browse zone rows)
@@ -634,7 +634,7 @@ struct AutoEQSearchPanel: View {
             .buttonStyle(.plain)
             .onHover { starHoveredID = $0 ? id : nil }
             .animation(DesignTokens.Animation.hover, value: isStarHovered)
-            .accessibilityLabel(isFavorited ? "Remove from favorites" : "Add to favorites")
+            .accessibilityLabel(isFavorited ? "取消收藏" : "添加收藏")
         }
     }
 
@@ -650,7 +650,7 @@ struct AutoEQSearchPanel: View {
                 onSelect(profile)
                 onDismiss()
             } else {
-                fetchError = "Failed to load \(entry.name)"
+                fetchError = "加载失败: \(entry.name)"
                 Task {
                     try? await Task.sleep(for: .seconds(3))
                     if fetchError != nil { fetchError = nil }
