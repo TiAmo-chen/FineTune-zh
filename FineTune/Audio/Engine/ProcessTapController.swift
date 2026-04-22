@@ -308,21 +308,21 @@ final class ProcessTapController: ProcessTapControlling {
         ]
     }
 
-    private func preferredStereoChannels(for deviceUID: String?) -> (left: Int, right: Int) {
+    @MainActor private func preferredStereoChannels(for deviceUID: String?) -> (left: Int, right: Int) {
         guard let deviceUID, let deviceID = audioDeviceID(for: deviceUID) else {
             return (0, 1)
         }
         return deviceID.preferredStereoChannelIndices()
     }
 
-    private func outputStreamIndex(for deviceUID: String?) -> UInt? {
+    @MainActor private func outputStreamIndex(for deviceUID: String?) -> UInt? {
         guard let deviceUID, let deviceID = audioDeviceID(for: deviceUID) else {
             return nil
         }
         return try? deviceID.firstOutputStreamIndex()
     }
 
-    private func audioDeviceID(for deviceUID: String) -> AudioDeviceID? {
+    @MainActor private func audioDeviceID(for deviceUID: String) -> AudioDeviceID? {
         if let monitored = deviceMonitor?.device(for: deviceUID)?.id {
             return monitored
         }
@@ -396,7 +396,7 @@ final class ProcessTapController: ProcessTapControlling {
         return (mixdownTap, mixdownTapID)
     }
 
-    func activate() throws {
+    @MainActor func activate() throws {
         guard !activated else { return }
 
         logger.debug("Activating tap for \(self.app.name)")
@@ -684,7 +684,7 @@ final class ProcessTapController: ProcessTapControlling {
         logger.info("[CROSSFADE] Step 1: Reading device volumes for compensation")
 
         var isBluetoothDestination = false
-        if let destDevice = deviceMonitor?.device(for: primaryDeviceUID) {
+        if let destDevice = await deviceMonitor?.device(for: primaryDeviceUID) {
             let transport = destDevice.id.readTransportType()
             isBluetoothDestination = (transport == .bluetooth || transport == .bluetoothLE)
             logger.debug("[CROSSFADE] Destination device: BT=\(isBluetoothDestination)")
@@ -757,7 +757,7 @@ final class ProcessTapController: ProcessTapControlling {
         logger.info("[CROSSFADE] Complete")
     }
 
-    private func createSecondaryTap(for outputUIDs: [String]) throws {
+    @MainActor private func createSecondaryTap(for outputUIDs: [String]) throws {
         precondition(!outputUIDs.isEmpty, "Must have at least one output device")
 
         let (tapDesc, tapID) = try createProcessTap(preferredDeviceUID: preferredTapSourceDeviceUID)
@@ -963,7 +963,7 @@ final class ProcessTapController: ProcessTapControlling {
         logger.info("[SWITCH-DESTROY] Complete")
     }
 
-    private func performDeviceSwitch(to outputUIDs: [String]) throws {
+    @MainActor private func performDeviceSwitch(to outputUIDs: [String]) throws {
         precondition(!outputUIDs.isEmpty, "Must have at least one output device")
 
         var newResources = TapResources()
