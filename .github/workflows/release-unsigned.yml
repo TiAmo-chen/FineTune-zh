@@ -41,14 +41,17 @@ jobs:
             CODE_SIGNING_ALLOWED=NO \
             SWIFT_STRICT_CONCURRENCY=minimal
 
+          # Find the built app
+          APP_PATH=$(find build -name "FineTune.app" -type d | head -1)
+          echo "APP_PATH=$APP_PATH" >> $GITHUB_ENV
+          echo "Found app at: $APP_PATH"
+          ls -la "$APP_PATH"
+
       - name: Create DMG
         run: |
-          # Install create-dmg
-          brew install create-dmg
-
           # Create DMG with Applications symlink
           mkdir -p dmg_temp
-          cp -r build/Release/FineTune.app dmg_temp/
+          cp -r "$APP_PATH" dmg_temp/
           ln -s /Applications dmg_temp/Applications
 
           # Create DMG
