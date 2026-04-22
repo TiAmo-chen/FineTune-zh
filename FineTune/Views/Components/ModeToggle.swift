@@ -8,8 +8,8 @@ struct ModeToggle: View {
     @State private var hoveredOption: DeviceSelectionMode?
 
     private let options: [(mode: DeviceSelectionMode, label: String)] = [
-        (.single, "Single"),
-        (.multi, "Multi")
+        (.single, "单设备"),
+        (.multi, "多设备")
     ]
 
     var body: some View {
@@ -87,7 +87,7 @@ struct ModeToggle: View {
                     ModeToggle(mode: $mode)
                         .frame(width: 180)
 
-                    Text("Current: \(mode == .single ? "Single" : "Multi")")
+                    Text("当前: \(mode == .single ? "单设备" : "多设备")")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }

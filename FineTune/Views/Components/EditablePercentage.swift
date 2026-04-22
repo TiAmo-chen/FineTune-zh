@@ -75,7 +75,7 @@ struct EditablePercentage: View {
         .contentShape(Rectangle())
         .onTapGesture { if !isEditing { startEditing() } }
         .accessibilityAddTraits(.isButton)
-        .accessibilityLabel("Edit volume percentage")
+        .accessibilityLabel("编辑音量百分比")
         .onHover { hovering in
             isHovered = hovering
             if hovering {
@@ -148,7 +148,7 @@ private struct FramePreferenceKey: PreferenceKey {
 
         var body: some View {
             HStack {
-                Text("Volume:")
+                Text("音量:")
                 EditablePercentage(percentage: $percentage, range: 0...400)
             }
             .padding()

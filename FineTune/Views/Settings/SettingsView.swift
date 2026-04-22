@@ -45,19 +45,19 @@ struct SettingsView: View {
 
     private var generalSection: some View {
         VStack(alignment: .leading, spacing: DesignTokens.Spacing.xs) {
-            SectionHeader(title: "General")
+            SectionHeader(title: "通用")
                 .padding(.bottom, DesignTokens.Spacing.xs)
 
             SettingsToggleRow(
                 icon: "power",
-                title: "Launch at Login",
-                description: "Start FineTune when you log in",
+                title: "登录时启动",
+                description: "登录时自动启动 FineTune",
                 isOn: $settings.launchAtLogin
             )
 
             SettingsIconPickerRow(
                 icon: "menubar.rectangle",
-                title: "Menu Bar Icon",
+                title: "菜单栏图标",
                 selection: $settings.menuBarIconStyle,
                 appliedStyle: launchIconStyle
             )
@@ -77,28 +77,28 @@ struct SettingsView: View {
 
     private var audioSection: some View {
         VStack(alignment: .leading, spacing: DesignTokens.Spacing.xs) {
-            SectionHeader(title: "Audio")
+            SectionHeader(title: "音频")
                 .padding(.bottom, DesignTokens.Spacing.xs)
 
             SettingsSliderRow(
                 icon: "speaker.wave.2",
-                title: "Default Volume",
-                description: "Initial volume for new apps",
+                title: "默认音量",
+                description: "新应用的初始音量",
                 value: $settings.defaultNewAppVolume,
                 range: 0.1...1.0
             )
 
             SettingsToggleRow(
                 icon: "speaker.badge.exclamationmark",
-                title: "Software Volume for Unsupported Devices",
-                description: "Add volume sliders for outputs without native controls (e.g. HDMI TVs)",
+                title: "不支持设备的软件音量",
+                description: "为无原生控制的输出设备添加音量滑块（如 HDMI 电视）",
                 isOn: $settings.softwareDeviceVolumeEnabled
             )
 
             SettingsToggleRow(
                 icon: "mic",
-                title: "Lock Input Device",
-                description: "Prevent auto-switching when devices connect",
+                title: "锁定输入设备",
+                description: "设备连接时防止自动切换",
                 isOn: $settings.lockInputDevice
             )
 
@@ -121,8 +121,8 @@ struct SettingsView: View {
             // Sound Effects alert volume slider
             SettingsSliderRow(
                 icon: "bell.and.waves.left.and.right",
-                title: "Alert Volume",
-                description: "Volume for alerts and notifications",
+                title: "提示音音量",
+                description: "提醒和通知的音量",
                 value: Binding(
                     get: { deviceVolumeMonitor.alertVolume },
                     set: { deviceVolumeMonitor.setAlertVolume($0) }
@@ -149,13 +149,13 @@ struct SettingsView: View {
 
     private var notificationsSection: some View {
         VStack(alignment: .leading, spacing: DesignTokens.Spacing.xs) {
-            SectionHeader(title: "Notifications")
+            SectionHeader(title: "通知")
                 .padding(.bottom, DesignTokens.Spacing.xs)
 
             SettingsToggleRow(
                 icon: "bell",
-                title: "Device Disconnect Alerts",
-                description: "Show notification when device disconnects",
+                title: "设备断开提醒",
+                description: "设备断开时显示通知",
                 isOn: $settings.showDeviceDisconnectAlerts
             )
         }
@@ -165,7 +165,7 @@ struct SettingsView: View {
 
     private var dataSection: some View {
         VStack(alignment: .leading, spacing: DesignTokens.Spacing.xs) {
-            SectionHeader(title: "Data")
+            SectionHeader(title: "数据")
                 .padding(.bottom, DesignTokens.Spacing.xs)
 
             if showResetConfirmation {
@@ -176,17 +176,17 @@ struct SettingsView: View {
                         .frame(width: DesignTokens.Dimensions.settingsIconWidth)
 
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("Reset all settings?")
+                        Text("重置所有设置？")
                             .font(DesignTokens.Typography.rowName)
                             .foregroundStyle(DesignTokens.Colors.textPrimary)
-                        Text("This cannot be undone")
+                        Text("此操作无法撤销")
                             .font(DesignTokens.Typography.caption)
                             .foregroundStyle(DesignTokens.Colors.textTertiary)
                     }
 
                     Spacer()
 
-                    Button("Cancel") {
+                    Button("取消") {
                         withAnimation(.easeInOut(duration: 0.2)) {
                             showResetConfirmation = false
                         }
@@ -195,7 +195,7 @@ struct SettingsView: View {
                     .font(DesignTokens.Typography.pickerText)
                     .foregroundStyle(DesignTokens.Colors.textSecondary)
 
-                    Button("Reset") {
+                    Button("重置") {
                         onResetAll()
                         showResetConfirmation = false
                     }
@@ -208,9 +208,9 @@ struct SettingsView: View {
             } else {
                 SettingsButtonRow(
                     icon: "arrow.counterclockwise",
-                    title: "Reset All Settings",
-                    description: "Clear all volumes, EQ, and device routings",
-                    buttonLabel: "Reset",
+                    title: "重置所有设置",
+                    description: "清除所有音量、EQ 和设备路由",
+                    buttonLabel: "重置",
                     isDestructive: true
                 ) {
                     withAnimation(.easeInOut(duration: 0.2)) {
@@ -233,7 +233,7 @@ struct SettingsView: View {
             Button {
                 NSWorkspace.shared.open(URL(string: "https://github.com/ronitsingh10/FineTune")!)
             } label: {
-                Text("\(Image(systemName: isStarHovered ? "star.fill" : "star")) Star on GitHub")
+                Text("\(Image(systemName: isStarHovered ? "star.fill" : "star")) 在 GitHub 加星")
                     .foregroundStyle(isStarHovered ? Color(nsColor: .systemYellow) : DesignTokens.Colors.textTertiary)
             }
             .buttonStyle(.plain)
@@ -242,14 +242,14 @@ struct SettingsView: View {
                     isStarHovered = hovering
                 }
             }
-            .accessibilityLabel("Star FineTune on GitHub")
+            .accessibilityLabel("在 GitHub 加星")
 
             Text("·")
 
             Button {
                 NSWorkspace.shared.open(DesignTokens.Links.support)
             } label: {
-                Text("\(Image(systemName: isSupportHovered ? "heart.fill" : "heart")) Support FineTune")
+                Text("\(Image(systemName: isSupportHovered ? "heart.fill" : "heart")) 支持 FineTune")
                     .foregroundStyle(isSupportHovered ? Color(nsColor: .systemPink) : DesignTokens.Colors.textTertiary)
             }
             .buttonStyle(.plain)
@@ -258,11 +258,11 @@ struct SettingsView: View {
                     isSupportHovered = hovering
                 }
             }
-            .accessibilityLabel("Support FineTune")
+            .accessibilityLabel("支持 FineTune")
 
             Text("·")
 
-            Text("Copyright © \(yearText) Ronit Singh")
+            Text("版权所有 © \(yearText) Ronit Singh")
 
             Text("·")
 
@@ -278,7 +278,7 @@ struct SettingsView: View {
                     isLicenseHovered = hovering
                 }
             }
-            .accessibilityLabel("View GPL-3.0 license")
+            .accessibilityLabel("查看 GPL-3.0 许可证")
         }
         .font(DesignTokens.Typography.caption)
         .foregroundStyle(DesignTokens.Colors.textTertiary)

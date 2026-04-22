@@ -114,7 +114,7 @@ struct AppRow: View {
                         .opacity(isIconHovered ? 0.7 : 1.0)
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel("Open \(app.name)")
+                .accessibilityLabel("打开 \(app.name)")
                 .onHover { hovering in
                     isIconHovered = hovering
                     if hovering {

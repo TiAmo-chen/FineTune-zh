@@ -12,12 +12,12 @@ struct PermissionBannerView: View {
                     .font(.title)
                     .foregroundStyle(DesignTokens.Colors.textTertiary)
 
-                Text("Audio capture access required")
+                Text("需要音频捕获权限")
                     .font(.callout)
                     .foregroundStyle(DesignTokens.Colors.textSecondary)
 
                 if permission.status == .denied {
-                    Text("Enable in System Settings \u{2192} Privacy & Security \u{2192} Screen & System Audio Recording")
+                    Text("请在系统设置 → 隐私与安全 → 屏幕与系统音频录制 中启用")
                         .font(DesignTokens.Typography.caption)
                         .foregroundStyle(DesignTokens.Colors.textTertiary)
                         .multilineTextAlignment(.center)
@@ -33,13 +33,13 @@ struct PermissionBannerView: View {
     @ViewBuilder
     private var actionButton: some View {
         if permission.status == .denied {
-            Button("Open System Settings") {
+            Button("打开系统设置") {
                 openSystemAudioSettings()
             }
             .buttonStyle(.bordered)
             .controlSize(.small)
         } else {
-            Button("Grant Access") {
+            Button("授予权限") {
                 permission.request()
             }
             .buttonStyle(.bordered)

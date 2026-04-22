@@ -1,99 +1,98 @@
-<img src="assets/icon.png" width="170" height="170" alt="FineTune app icon" align="left"/>
+<img src="assets/icon.png" width="170" height="170" alt="FineTune 应用图标" align="left"/>
 
 <h3>FineTune</h3>
 
-Control the volume of every app independently, boost quiet ones up to 4x, route audio to different speakers, and shape your sound with EQ and headphone correction. Lives in your menu bar. Free and open-source.
+独立控制每个应用的音量，将安静的应用音量最高提升至 4 倍，将音频路由到不同的扬声器，并通过 EQ 和耳机校正来塑造您的声音。驻留在菜单栏中。免费且开源。
 
-<a href="https://github.com/ronitsingh10/FineTune/releases/latest/download/FineTune.dmg"><img src="assets/download-badge.svg" alt="Download for macOS" height="48"/></a>
+<a href="https://github.com/ronitsingh10/FineTune/releases/latest/download/FineTune.dmg"><img src="assets/download-badge.svg" alt="下载 macOS 版本" height="48"/></a>
 
 <br clear="all"/>
 
 <p align="center">
-  <a href="https://github.com/ronitsingh10/FineTune/releases/latest"><img src="https://img.shields.io/github/v/release/ronitsingh10/FineTune?style=for-the-badge&labelColor=1c1c1e&color=0A84FF&logo=github&logoColor=white" alt="Latest Release"></a>
-  <a href="https://github.com/ronitsingh10/FineTune/releases"><img src="https://img.shields.io/github/downloads/ronitsingh10/FineTune/total?style=for-the-badge&labelColor=1c1c1e&color=3a3a3c" alt="Downloads"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/License-GPLv3-3a3a3c?style=for-the-badge&labelColor=1c1c1e" alt="License: GPL v3"></a>
-  <a href="https://ko-fi.com/ronitsingh10"><img src="https://img.shields.io/badge/Tip_on_Ko--fi-FF5E5B?style=for-the-badge&labelColor=1c1c1e&logo=ko-fi&logoColor=white" alt="Tip on
-  Ko-fi"></a>
+  <a href="https://github.com/ronitsingh10/FineTune/releases/latest"><img src="https://img.shields.io/github/v/release/ronitsingh10/FineTune?style=for-the-badge&labelColor=1c1c1e&color=0A84FF&logo=github&logoColor=white" alt="最新版本"></a>
+  <a href="https://github.com/ronitsingh10/FineTune/releases"><img src="https://img.shields.io/github/downloads/ronitsingh10/FineTune/total?style=for-the-badge&labelColor=1c1c1e&color=3a3a3c" alt="下载量"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-GPLv3-3a3a3c?style=for-the-badge&labelColor=1c1c1e" alt="许可证: GPL v3"></a>
+  <a href="https://ko-fi.com/ronitsingh10"><img src="https://img.shields.io/badge/在_Ko--fi_上打赏-FF5E5B?style=for-the-badge&labelColor=1c1c1e&logo=ko-fi&logoColor=white" alt="在 Ko-fi 上打赏"></a>
   <a href="https://www.apple.com/macos/"><img src="https://img.shields.io/badge/macOS-15%2B-3a3a3c?style=for-the-badge&labelColor=1c1c1e&logo=apple&logoColor=white" alt="macOS 15+"></a>
 </p>
 
 <p align="center">
-  <img src="assets/screenshot-main.png" alt="FineTune showing per-app volume control with EQ and multi-device output" width="750">
+  <img src="assets/screenshot-main.png" alt="FineTune 显示独立应用音量控制、EQ 和多设备输出" width="750">
 </p>
 
-## Install
+## 安装
 
-**Homebrew** (recommended)
+**Homebrew**（推荐）
 
 ```bash
 brew install --cask finetune
 ```
 
-**Manual** — [Download latest release](https://github.com/ronitsingh10/FineTune/releases/latest)
+**手动安装** — [下载最新版本](https://github.com/ronitsingh10/FineTune/releases/latest)
 
-## Quick Start
+## 快速开始
 
-1. Install FineTune and launch it from your Applications folder
-2. Grant **Screen & System Audio Recording** permission when prompted
-3. Click the FineTune icon in your menu bar. Apps playing audio appear automatically.
+1. 安装 FineTune 并从应用程序文件夹启动
+2. 在提示时授予**屏幕与系统音频录制**权限
+3. 点击菜单栏中的 FineTune 图标。正在播放音频的应用会自动出现。
 
-That's it. Adjust sliders, route audio, and explore EQ from the menu bar.
+就是这样。在菜单栏中调整滑块、路由音频并探索 EQ。
 
-> **Tip:** Want FineTune to auto-switch to a specific device when you connect it? Open edit mode (pencil icon) and drag it above the built-in speakers. This is a one-time setup. Your preferred order is saved permanently.
+> **提示：**想让 FineTune 在连接特定设备时自动切换到该设备？打开编辑模式（铅笔图标）并将其拖到内置扬声器上方。这是一次性设置。您偏好的顺序将被永久保存。
 
-## Features
+## 功能特性
 
-### 🎚 Volume Control
-- **Per-app volume** — Individual sliders and mute for each application
-- **Per-app volume boost** — 2x / 3x / 4x gain presets
-- **Pinned apps** — Keep apps visible in the menu bar even when they're not playing, so you can configure volume, EQ, and routing in advance
-- **Ignore apps** — Completely disengage FineTune from specific apps. Tears down the audio tap so the app returns to normal macOS audio
+### 🎚 音量控制
+- **独立应用音量** — 每个应用程序都有独立的滑块和静音控制
+- **独立应用音量增强** — 2 倍 / 3 倍 / 4 倍增益预设
+- **固定应用** — 即使应用未播放，也将其保持在菜单栏中可见，以便提前配置音量、EQ 和路由
+- **忽略应用** — 完全让 FineTune 与特定应用脱离。拆除音频分流，让应用恢复正常的 macOS 音频
 
-### 🔀 Audio Routing
-- **Multi-device output** — Route audio to multiple devices simultaneously
-- **Audio routing** — Send apps to different outputs or follow system default
-- **Device priority** — Choose which device FineTune switches to when a new device connects; auto-fallback on disconnect
-- **Auto-restore** — When a device reconnects, apps automatically return to it with their volume, routing, and EQ intact
+### 🔀 音频路由
+- **多设备输出** — 同时将音频路由到多个设备
+- **音频路由** — 将应用发送到不同的输出设备或跟随系统默认设置
+- **设备优先级** — 选择当新设备连接时 FineTune 切换到哪个设备；断开连接时自动回退
+- **自动恢复** — 当设备重新连接时，应用会自动返回该设备，音量、路由和 EQ 设置完整保留
 
-### 🎛 EQ & Correction
-- **10-band EQ** — 20 presets across 5 categories
-- **User EQ presets** — Save, rename, and manage custom EQ configurations per app
-- **AutoEQ headphone correction** — Search thousands of headphone profiles or import your own ParametricEQ.txt files for per-device frequency response correction
-- **Loudness compensation** — Automatic bass and treble correction at low volumes using ISO 226:2023 equal-loudness contours, with real-time level management to keep perceived loudness consistent
+### 🎛 EQ 与校正
+- **10 段 EQ** — 5 个类别下的 20 个预设
+- **用户 EQ 预设** — 为每个应用保存、重命名和管理自定义 EQ 配置
+- **AutoEQ 耳机校正** — 搜索数千个耳机配置文件或导入您自己的 ParametricEQ.txt 文件，进行设备频率响应校正
+- **响度补偿** — 在低音量时使用 ISO 226:2023 等响度曲线自动进行低音和高音校正，配合实时电平管理以保持感知响度一致
 
-### 🖥 Devices & System
-- **Input device control** — Monitor and adjust microphone levels
-- **Alert volume** — Control macOS notification and alert volume from settings
-- **Software device volume** — Volume control for outputs that don't support hardware volume
-- **Bluetooth device management** — Connect paired devices directly from the menu bar
-- **Monitor speaker control** — Adjust volume on external displays via DDC
-- **Menu bar app** — Lightweight, always accessible
-- **URL schemes** — Automate volume, mute, device routing, and more from scripts
+### 🖥 设备与系统
+- **输入设备控制** — 监控和调整麦克风音量
+- **提示音音量** — 从设置中控制 macOS 通知和提示音量
+- **软件设备音量** — 为不支持硬件音量的输出设备提供音量控制
+- **蓝牙设备管理** — 直接从菜单栏连接已配对的设备
+- **显示器扬声器控制** — 通过 DDC 调节外接显示器的音量
+- **菜单栏应用** — 轻量级，随时可访问
+- **URL 方案** — 通过脚本自动化音量、静音、设备路由等功能
 
-## Screenshots
+## 截图
 
 <p align="center">
-  <img src="assets/screenshot-main.png" alt="FineTune showing per-app volume control with EQ and multi-device output" width="400">
-  <img src="assets/screenshot-edit-mode.png" alt="FineTune edit mode showing device priority, Bluetooth pairing, and app pin/ignore controls" width="400">
+  <img src="assets/screenshot-main.png" alt="FineTune 显示独立应用音量控制、EQ 和多设备输出" width="400">
+  <img src="assets/screenshot-edit-mode.png" alt="FineTune 编辑模式显示设备优先级、蓝牙配对和应用固定/忽略控制" width="400">
 </p>
 <p align="center">
-  <img src="assets/screenshot-autoeq.png" alt="FineTune AutoEQ headphone correction picker with search and favorites" width="400">
-  <img src="assets/screenshot-settings.png" alt="FineTune settings panel" width="400">
+  <img src="assets/screenshot-autoeq.png" alt="FineTune AutoEQ 耳机校正选择器，支持搜索和收藏" width="400">
+  <img src="assets/screenshot-settings.png" alt="FineTune 设置面板" width="400">
 </p>
 
-## Documentation
+## 文档
 
-- **[AutoEQ & Headphone Correction](guide/autoeq.md)** — Apply frequency correction from the [AutoEQ](https://github.com/jaakkopasanen/AutoEq) project, import [EqualizerAPO](https://sourceforge.net/projects/equalizerapo/) profiles, or browse [autoeq.app](https://www.autoeq.app/)
-- **[URL Schemes](guide/url-schemes.md)** — Automate FineTune from Terminal, [Shortcuts](https://support.apple.com/guide/shortcuts-mac), [Raycast](https://raycast.com), or scripts
-- **[Troubleshooting](guide/troubleshooting.md)** — Permission issues, missing apps, audio problems
+- **[AutoEQ 与耳机校正](guide/autoeq.md)** — 应用来自 [AutoEQ](https://github.com/jaakkopasanen/AutoEq) 项目的频率校正，导入 [EqualizerAPO](https://sourceforge.net/projects/equalizerapo/) 配置文件，或浏览 [autoeq.app](https://www.autoeq.app/)
+- **[URL 方案](guide/url-schemes.md)** — 从终端、[快捷指令](https://support.apple.com/guide/shortcuts-mac)、[Raycast](https://raycast.com) 或脚本自动化 FineTune
+- **[故障排除](guide/troubleshooting.md)** — 权限问题、应用缺失、音频问题
 
-## Contributing
+## 参与贡献
 
-- **Star this repo** — Help others discover FineTune
-- **Report bugs** — [Open an issue](https://github.com/ronitsingh10/FineTune/issues)
-- **Contribute code** — See [CONTRIBUTING.md](CONTRIBUTING.md)
+- **给本仓库点赞** — 帮助更多人发现 FineTune
+- **报告问题** — [提交 Issue](https://github.com/ronitsingh10/FineTune/issues)
+- **贡献代码** — 参阅 [CONTRIBUTING.md](CONTRIBUTING.md)
 
-### Build from Source
+### 从源码构建
 
 ```bash
 git clone https://github.com/ronitsingh10/FineTune.git
@@ -101,18 +100,18 @@ cd FineTune
 open FineTune.xcodeproj
 ```
 
-## Requirements
+## 系统要求
 
-- macOS 15.0 (Sequoia) or later
-- Audio capture permission (prompted on first launch)
+- macOS 15.0 (Sequoia) 或更高版本
+- 音频捕获权限（首次启动时提示）
 
-## Support
+## 支持开发者
 
-FineTune is free and open source, forever. If it made your day a little easier, you can buy me a coffee — but genuinely not expected 🙏
+FineTune 永远免费且开源。如果它让您的日常更轻松，您可以请我喝杯咖啡 — 但真心不期望您这么做 🙏
 
-[![Buy me a coffee](https://img.shields.io/badge/Buy_me_a_coffee-FF5E5B?style=for-the-badge&logo=ko-fi&logoColor=white)](https://ko-fi.com/ronitsingh10)
+[![请我喝杯咖啡](https://img.shields.io/badge/请我喝杯咖啡-FF5E5B?style=for-the-badge&logo=ko-fi&logoColor=white)](https://ko-fi.com/ronitsingh10)
 
 
-## License
+## 许可证
 
 [GPL v3](LICENSE)

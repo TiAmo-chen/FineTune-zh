@@ -5,11 +5,11 @@
 	<key>LSUIElement</key>
 	<true/>
 	<key>NSAudioCaptureUsageDescription</key>
-	<string>FineTune needs access to control volume levels for individual applications.</string>
+	<string>FineTune 需要访问权限以控制各应用程序的音量。</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>FineTune needs microphone access to capture audio from apps using input-capable devices.</string>
+	<string>FineTune 需要麦克风权限以捕获使用输入设备的应用音频。</string>
 	<key>NSBluetoothAlwaysUsageDescription</key>
-	<string>FineTune uses Bluetooth to connect paired audio devices from the menu bar.</string>
+	<string>FineTune 使用蓝牙从菜单栏连接配对的音频设备。</string>
 	<key>SUFeedURL</key>
 	<string>https://raw.githubusercontent.com/ronitsingh10/FineTune/main/appcast.xml</string>
 	<key>SUPublicEDKey</key>

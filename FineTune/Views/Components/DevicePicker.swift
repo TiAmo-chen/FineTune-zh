@@ -43,7 +43,7 @@ struct DevicePicker: View {
 
         var name: String {
             switch self {
-            case .systemAudio: return "System Audio"
+            case .systemAudio: return "系统音频"
             case .device(let device): return device.name
             }
         }
@@ -71,18 +71,18 @@ struct DevicePicker: View {
                 // No multi selections - show single-mode device (what's actually playing)
                 return singleModeText
             }
-            return "\(count) device\(count == 1 ? "" : "s")"
+            return "\(count) 设备"
         }
     }
 
     /// Text for single-mode display (also used as fallback for empty multi-mode)
     private var singleModeText: String {
         if isFollowingDefault {
-            return "System Audio"
+            return "系统音频"
         } else if let device = devices.first(where: { $0.uid == selectedDeviceUID }) {
             return device.name
         }
-        return "Select"
+        return "选择"
     }
 
     /// Icon for trigger button
@@ -401,13 +401,13 @@ private struct DevicePickerRow: View {
         switch item {
         case .systemAudio:
             VStack(alignment: .leading, spacing: 1) {
-                Text("System Audio")
+                Text("系统音频")
                 if isDisabled {
-                    Text("Not available in multi mode")
+                    Text("多设备模式不可用")
                         .font(DesignTokens.Typography.caption)
                         .foregroundStyle(DesignTokens.Colors.textQuaternary)
                 } else {
-                    Text("Follows macOS default")
+                    Text("跟随 macOS 默认")
                         .font(DesignTokens.Typography.caption)
                         .foregroundStyle(DesignTokens.Colors.textTertiary)
                 }
@@ -542,7 +542,7 @@ extension DevicePicker {
                                 Text("Selected: \(selectedUID)")
                             }
                         } else {
-                            Text("Selected: \(selectedUIDs.count) devices")
+Text("已选择: \(selectedUIDs.count) 设备")
                         }
                     }
                     .font(.caption)

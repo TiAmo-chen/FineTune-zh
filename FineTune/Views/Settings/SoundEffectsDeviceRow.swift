@@ -13,8 +13,8 @@ struct SoundEffectsDeviceRow: View {
     var body: some View {
         SettingsRowView(
             icon: "bell.fill",
-            title: "Sound Effects",
-            description: "Output device for alerts, notifications, and Siri"
+            title: "音效",
+            description: "用于提醒、通知和 Siri 的输出设备"
         ) {
             DevicePicker(
                 devices: devices,

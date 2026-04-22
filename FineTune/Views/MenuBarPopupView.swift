@@ -82,13 +82,13 @@ struct MenuBarPopupView: View {
             // Header row - always visible, shows tabs or Settings title
             HStack(alignment: .top) {
                 if isSettingsOpen {
-                    Text("Settings")
+                    Text("设置")
                         .sectionHeaderStyle()
                 } else {
                     deviceTabsHeader
                     Spacer()
                     if isEditingDevicePriority {
-                        Text("Drag or type a number to set priority")
+                        Text("拖动或输入数字设置优先级")
                             .font(.system(size: 11))
                             .foregroundStyle(DesignTokens.Colors.textSecondary)
                     } else {
@@ -204,7 +204,7 @@ struct MenuBarPopupView: View {
 
     /// Edit priority button — pencil ↔ checkmark, styled to match settingsButton
     private var editPriorityButton: some View {
-        Button(isEditingDevicePriority ? "Done reordering" : "Reorder devices",
+        Button(isEditingDevicePriority ? "完成排序" : "排序设备",
                systemImage: isEditingDevicePriority ? "checkmark" : "pencil") {
             toggleDevicePriorityEdit()
         }
@@ -219,14 +219,14 @@ struct MenuBarPopupView: View {
         )
         .contentShape(Rectangle())
         .animation(.spring(response: 0.3, dampingFraction: 0.75), value: isEditingDevicePriority)
-        .help(isEditingDevicePriority ? "Done reordering" : "Reorder devices")
+        .help(isEditingDevicePriority ? "完成排序" : "排序设备")
     }
 
     // MARK: - Settings Button
 
     /// Settings button with gear ↔ X morphing animation
     private var settingsButton: some View {
-        Button(isSettingsOpen ? "Close Settings" : "Settings",
+        Button(isSettingsOpen ? "关闭设置" : "设置",
                systemImage: isSettingsOpen ? "xmark" : "gearshape.fill") {
             toggleSettings()
         }
@@ -296,7 +296,7 @@ struct MenuBarPopupView: View {
             Button {
                 NSWorkspace.shared.open(DesignTokens.Links.support)
             } label: {
-                Label("Support", systemImage: isSupportHovered ? "heart.fill" : "heart")
+                Label("支持", systemImage: isSupportHovered ? "heart.fill" : "heart")
             }
             .buttonStyle(.plain)
             .font(DesignTokens.Typography.caption)
@@ -306,12 +306,12 @@ struct MenuBarPopupView: View {
                     isSupportHovered = hovering
                 }
             }
-            .accessibilityLabel("Support FineTune")
-            .help("Support FineTune")
+            .accessibilityLabel("支持 FineTune")
+            .help("支持 FineTune")
 
             Spacer()
 
-            Button("Quit FineTune") {
+            Button("退出 FineTune") {
                 NSApplication.shared.terminate(nil)
             }
             .buttonStyle(.plain)
@@ -327,7 +327,7 @@ struct MenuBarPopupView: View {
     private var defaultOutputDeviceName: String {
         guard let uid = deviceVolumeMonitor.defaultDeviceUID,
               let device = sortedDevices.first(where: { $0.uid == uid }) else {
-            return "No Output"
+            return "无输出"
         }
         return device.name
     }
@@ -336,7 +336,7 @@ struct MenuBarPopupView: View {
     private var defaultInputDeviceName: String {
         guard let uid = deviceVolumeMonitor.defaultInputDeviceUID,
               let device = sortedInputDevices.first(where: { $0.uid == uid }) else {
-            return "No Input"
+            return "无输入"
         }
         return device.name
     }
@@ -398,7 +398,7 @@ struct MenuBarPopupView: View {
                     .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            .help("Output Devices")
+            .help("输出设备")
 
             // Input (mic) button
             Button {
@@ -421,7 +421,7 @@ struct MenuBarPopupView: View {
                     .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            .help("Input Devices")
+            .help("输入设备")
         }
         .padding(3)
         .background(
@@ -498,7 +498,7 @@ struct MenuBarPopupView: View {
                 // Paired Bluetooth devices (output tab only)
                 if !showingInputDevices {
                     if !isBluetoothOn {
-                        Text("Turn on Bluetooth to connect devices")
+                        Text("开启蓝牙连接设备")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                             .padding(.top, DesignTokens.Spacing.xs)
@@ -508,7 +508,7 @@ struct MenuBarPopupView: View {
                         let connectedNames = Set(editableDeviceOrder.map(\.name))
                         let filteredPaired = pairedDevices.filter { !connectedNames.contains($0.name) }
                         if !filteredPaired.isEmpty {
-                            SectionHeader(title: "Paired")
+                            SectionHeader(title: "已配对")
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .padding(.top, DesignTokens.Spacing.xs)
 
@@ -611,13 +611,13 @@ struct MenuBarPopupView: View {
                 Image(systemName: "speaker.slash")
                     .font(.title)
                     .foregroundStyle(DesignTokens.Colors.textTertiary)
-                Text("No apps playing audio")
+                Text("无应用播放音频")
                     .font(.callout)
                     .foregroundStyle(DesignTokens.Colors.textSecondary)
 
                 let ignoredCount = audioEngine.settingsManager.getIgnoredAppInfo().count
                 if ignoredCount > 0 {
-                    Text("\(ignoredCount) ignored · edit to manage")
+                    Text("\(ignoredCount) 已忽略 · 编辑以管理")
                         .font(DesignTokens.Typography.caption)
                         .foregroundStyle(DesignTokens.Colors.textTertiary)
                 }
@@ -634,7 +634,7 @@ struct MenuBarPopupView: View {
             Spacer()
             let ignoredCount = audioEngine.settingsManager.getIgnoredAppInfo().count
             if ignoredCount > 0 && !isEditingDevicePriority {
-                Text("\(ignoredCount) ignored")
+                Text("\(ignoredCount) 已忽略")
                     .font(DesignTokens.Typography.caption)
                     .foregroundStyle(DesignTokens.Colors.textTertiary)
             }
@@ -719,7 +719,7 @@ struct MenuBarPopupView: View {
                 Divider()
                     .padding(.vertical, DesignTokens.Spacing.xs)
 
-                Text("Ignored")
+                Text("已忽略")
                     .sectionHeaderStyle()
                     .padding(.bottom, DesignTokens.Spacing.xs)
 
@@ -1042,7 +1042,7 @@ struct MenuBarPopupView: View {
         panel.allowedContentTypes = [UTType.plainText]
         panel.allowsMultipleSelection = false
         panel.canChooseDirectories = false
-        panel.message = "Select an AutoEQ ParametricEQ.txt file"
+        panel.message = "选择 AutoEQ ParametricEQ.txt 文件"
         panel.begin { response in
             guard response == .OK, let url = panel.url else { return }
             let name = url.deletingPathExtension().lastPathComponent
@@ -1051,7 +1051,7 @@ struct MenuBarPopupView: View {
                     audioEngine.setAutoEQProfile(for: deviceUID, profileID: profile.id)
                     autoEQImportError = nil
                 } else {
-                    autoEQImportError = "Could not read profile — check file format"
+                    autoEQImportError = "无法读取配置文件 — 请检查文件格式"
                     importErrorClearTask?.cancel()
                     importErrorClearTask = Task {
                         try? await Task.sleep(for: .seconds(3))
@@ -1090,7 +1090,7 @@ struct MenuBarPopupView: View {
     // For now, just show the structure
     PreviewContainer {
         VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm) {
-            SectionHeader(title: "Output Devices")
+            SectionHeader(title: "输出设备")
                 .padding(.bottom, DesignTokens.Spacing.xs)
 
             ForEach(MockData.sampleDevices.prefix(2)) { device in
@@ -1108,7 +1108,7 @@ struct MenuBarPopupView: View {
             Divider()
                 .padding(.vertical, DesignTokens.Spacing.xs)
 
-            SectionHeader(title: "Apps")
+            SectionHeader(title: "应用")
                 .padding(.bottom, DesignTokens.Spacing.xs)
 
             ForEach(MockData.sampleApps.prefix(3)) { app in
