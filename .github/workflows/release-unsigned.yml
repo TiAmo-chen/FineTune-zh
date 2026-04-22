@@ -68,7 +68,11 @@ jobs:
             ### 安装方法
             1. 下载 `FineTune-${{ env.VERSION }}.dmg`
             2. 打开 DMG，将 FineTune 拖到 Applications
-            3.首次运行时，右键点击 → 打开（绕过 Gatekeeper）
+            3. **首次运行提示"已损坏"？** 打开终端运行：
+               ```bash
+               xattr -cr /Applications/FineTune.app
+               ```
+               然后再次打开即可
             
             ### 功能
             - 独立控制每个应用的音量
@@ -79,7 +83,7 @@ jobs:
             - 蓝牙设备管理
             
             ### 注意
-            - 未签名版本，首次运行需要右键打开
+            - 未签名版本，首次运行需要上述命令解除限制
             - 需要授予「屏幕与系统音频录制」权限
           draft: false
           prerelease: false
