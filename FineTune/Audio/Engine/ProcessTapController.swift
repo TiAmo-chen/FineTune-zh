@@ -347,7 +347,7 @@ final class ProcessTapController: ProcessTapControlling {
 
     /// Creates a process tap, preferring a device-stream tap to preserve multichannel routing.
     /// Falls back to stereo mixdown if stream-specific tap creation fails.
-    private func createProcessTap(preferredDeviceUID: String?) throws -> (description: CATapDescription, tapID: AudioObjectID) {
+    @MainActor private func createProcessTap(preferredDeviceUID: String?) throws -> (description: CATapDescription, tapID: AudioObjectID) {
         var lastError: OSStatus = noErr
 
         if let deviceUID = preferredDeviceUID {
@@ -697,7 +697,7 @@ final class ProcessTapController: ProcessTapControlling {
         crossfadeState.beginWarmup()
 
         logger.info("[CROSSFADE] Step 3: Creating secondary tap for \(deviceUIDs.count) device(s)")
-        try createSecondaryTap(for: deviceUIDs)
+        try await createSecondaryTap(for: deviceUIDs)
 
         // LIFE-004/005: Ensure secondary tap is cleaned up if crossfade fails or is cancelled
         var crossfadeCompleted = false
@@ -757,7 +757,7 @@ final class ProcessTapController: ProcessTapControlling {
         logger.info("[CROSSFADE] Complete")
     }
 
-    @MainActor private func createSecondaryTap(for outputUIDs: [String]) throws {
+    @MainActor private func createSecondaryTap(for outputUIDs: [String]) async throws {
         precondition(!outputUIDs.isEmpty, "Must have at least one output device")
 
         let (tapDesc, tapID) = try createProcessTap(preferredDeviceUID: preferredTapSourceDeviceUID)
@@ -944,7 +944,7 @@ final class ProcessTapController: ProcessTapControlling {
             try await Task.sleep(for: .milliseconds(100))
         }
 
-        try performDeviceSwitch(to: deviceUIDs)
+        try await performDeviceSwitch(to: deviceUIDs)
 
         _primaryCurrentVolume = 0
         _volume = 0
@@ -963,7 +963,7 @@ final class ProcessTapController: ProcessTapControlling {
         logger.info("[SWITCH-DESTROY] Complete")
     }
 
-    @MainActor private func performDeviceSwitch(to outputUIDs: [String]) throws {
+    @MainActor private func performDeviceSwitch(to outputUIDs: [String]) async throws {
         precondition(!outputUIDs.isEmpty, "Must have at least one output device")
 
         var newResources = TapResources()
