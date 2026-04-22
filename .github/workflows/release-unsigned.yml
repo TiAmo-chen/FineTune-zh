@@ -36,13 +36,14 @@ jobs:
             -project FineTune.xcodeproj \
             -scheme FineTune \
             -configuration Release \
+            -derivedDataPath build/DerivedData \
             CODE_SIGN_IDENTITY=- \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO \
             SWIFT_STRICT_CONCURRENCY=minimal
 
-          # Find the built app
-          APP_PATH=$(find build -name "FineTune.app" -type d | head -1)
+          # Find the built app in DerivedData
+          APP_PATH=$(find build/DerivedData -name "FineTune.app" -type d | head -1)
           echo "APP_PATH=$APP_PATH" >> $GITHUB_ENV
           echo "Found app at: $APP_PATH"
           ls -la "$APP_PATH"
